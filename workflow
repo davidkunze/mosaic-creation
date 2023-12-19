@@ -1,4 +1,4 @@
-## Workflow in Python
+##Workflow in Python
 
 1. Create subfolder 
 2. Build VRT from original images
