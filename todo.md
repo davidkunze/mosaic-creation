@@ -4,7 +4,8 @@
 - ~~Nur Kachelstücke mit ID 1 sollen erhalten bleiben~~
 - ~~ID-Spalte löschen~~
 - ~~.img, .png sollte als Importformat erkannt werden~~
-- Ordnerberezeichnung muss angepasst werden
+- ~~Ordnerberezeichnung muss angepasst werden~~
+  - footprints in eigenen Ordner? Ordnername --> KonGeo 
 - Benennung der Vectorlayer nochmal anpassen
 
 - es sollten nur Kacheln berechnet werden, die Daten enthalten, keine Leerkacheln berechnen --> Abgleichen mit Footprint vom VRT?
