@@ -1,8 +1,11 @@
 - Umprojizieren auf 28832
   - Metadatenspalte "epsg" bei Umprojizierung auf 25832 ändern   
-- aus Metadatenspalte "datum_bildflug_von" Jahr in neue Spalte extrahieren
-- ID-Spalte löschen
+- ~~aus Metadatenspalte "datum_bildflug_von" Jahr in neue Spalte extrahieren~~
+- ~~Nur Kachelstücke mit ID 1 sollen erhalten bleiben~~
+- ~~ID-Spalte löschen~~
 - ~~.img, .png sollte als Importformat erkannt werden~~
 - Ordnerberezeichnung muss angepasst werden
+- Benennung der Vectorlayer nochmal anpassen
 
-- es sollten nur Kacheln berechnet werden, die Daten enthalten, keine Leerkacheln berechnen
+- es sollten nur Kacheln berechnet werden, die Daten enthalten, keine Leerkacheln berechnen --> Abgleichen mit Footprint vom VRT?
+- Liste mit Kacheln --> Funktion mit erst Rasterkachel- und dann Footprintberechnung
