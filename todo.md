@@ -1,3 +1,4 @@
+- Overview_Kompression mit JPEG --> Probleme mit 16 Bit Bildern
 - Umprojizieren auf 28832
   - Metadatenspalte "epsg" bei Umprojizierung auf 25832 ändern   
 - ~~aus Metadatenspalte "datum_bildflug_von" Jahr in neue Spalte extrahieren~~
@@ -10,3 +11,4 @@
 
 - es sollten nur Kacheln berechnet werden, die Daten enthalten, keine Leerkacheln berechnen --> Abgleichen mit Footprint vom VRT?
 - Liste mit Kacheln --> Funktion mit erst Rasterkachel- und dann Footprintberechnung
+- gdal.parseCommandLine mit os.system ersetze
