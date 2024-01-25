@@ -1,4 +1,5 @@
 - Overview_Kompression mit JPEG --> Probleme mit 16 Bit Bildern
+-   Check datatype--> if < 8 bit than JPEG if > 8 bit than andere Overview Kompression
 - Umprojizieren auf 28832
   - Metadatenspalte "epsg" bei Umprojizierung auf 25832 ändern   
 - ~~aus Metadatenspalte "datum_bildflug_von" Jahr in neue Spalte extrahieren~~
