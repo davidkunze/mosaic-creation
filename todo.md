@@ -9,6 +9,7 @@
 - ~~Ordnerberezeichnung muss angepasst werden~~
   - footprints in eigenen Ordner? Ordnername --> KonGeo 
 - Benennung der Vectorlayer nochmal anpassen
+- Benennung cog-kacheln anpassen
 
 - es sollten nur Kacheln berechnet werden, die Daten enthalten, keine Leerkacheln berechnen --> Abgleichen mit Footprint vom VRT?
 - Liste mit Kacheln --> Funktion mit erst Rasterkachel- und dann Footprintberechnung
