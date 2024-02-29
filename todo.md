@@ -1,3 +1,4 @@
+- outlineberechnung anpassen --> contour vom finalen vrt, wenn nicht zu rechenintensiv
 - Overview_Kompression mit JPEG --> Probleme mit 16 Bit Bildern
 -   Check datatype--> if < 8 bit than JPEG if > 8 bit than andere Overview Kompression
 - ~~Umprojizieren auf 25832~~
