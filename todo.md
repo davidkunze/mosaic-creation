@@ -1,15 +1,15 @@
 - Overview_Kompression mit JPEG --> Probleme mit 16 Bit Bildern
 -   Check datatype--> if < 8 bit than JPEG if > 8 bit than andere Overview Kompression
 - ~~Umprojizieren auf 25832~~
-  - Metadatenspalte "epsg" bei Umprojizierung auf 25832 ändern
-  - Test, ob es sinnvoll ist bei großen Ausgangsdateien zunächst ein Split in Kacheln durchzuführen und dann erst umzuprojirieren
-    - Nicht umprojizieren in tif, vrt als Zwischenschritt --> sehr schnell --> test bei großen Datensätzen???
+  - ~~Metadatenspalte "epsg" bei Umprojizierung auf 25832 ändern~~
+  - ~~Test, ob es sinnvoll ist bei großen Ausgangsdateien zunächst ein Split in Kacheln durchzuführen und dann erst umzuprojirieren~~
+    - ~~Nicht umprojizieren in tif, vrt als Zwischenschritt --> sehr schnell --> test bei großen Datensätzen???~~
 - ~~aus Metadatenspalte "datum_bildflug_von" Jahr in neue Spalte extrahieren~~
 - ~~Nur Kachelstücke mit ID 1 sollen erhalten bleiben~~
 - ~~ID-Spalte löschen~~
 - ~~.img, .png sollte als Importformat erkannt werden~~
 - ~~Ordnerberezeichnung muss angepasst werden~~
-  - footprints in eigenen Ordner? Ordnername --> KonGeo 
+  - ~~footprints in eigenen Ordner? Ordnername --> KonGeo~~
 - Benennung der Vectorlayer nochmal anpassen
 - ~~Benennung cog-kacheln anpassen~~ --> Ordnerpfad zu Abkürzungsverzeichnis im Skript aktualisieren
 - ~~Benennung vrt anpassen~~ --> Ordnerpfad zu Abkürzungsverzeichnis im Skript aktualisieren
