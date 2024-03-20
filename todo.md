@@ -1,7 +1,8 @@
-- outlineberechnung anpassen --> contour vom finalen vrt, wenn nicht zu rechenintensiv
-- Fehlerhafte Lückenpixel bei Übersichten der COGs
-- Overview_Kompression mit JPEG --> Probleme mit 16 Bit Bildern
--   Check datatype--> if < 8 bit than JPEG if > 8 bit than andere Overview Kompression
+- es sollten nur Kacheln berechnet werden, die Daten enthalten, keine Leerkacheln berechnen --> Abgleichen mit Footprint vom VRT?
+- COG-Berechnung sehr arbeitsspeicherintensiv --> for start einer neuen Kachel, Test, ob ausreichend Arbeitsspeicher zur Verfügung steht
+- ~~Fehlerhafte Lückenpixel bei Übersichten der COGs~~
+- ~~Overview_Kompression mit JPEG --> Probleme mit 16 Bit Bildern~~
+-   ~~Check datatype--> if < 8 bit than JPEG if > 8 bit than andere Overview Kompression~~
 - ~~Umprojizieren auf 25832~~
   - ~~Metadatenspalte "epsg" bei Umprojizierung auf 25832 ändern~~
   - ~~Test, ob es sinnvoll ist bei großen Ausgangsdateien zunächst ein Split in Kacheln durchzuführen und dann erst umzuprojirieren~~
@@ -15,7 +16,5 @@
 - Benennung der Vectorlayer nochmal anpassen
 - ~~Benennung cog-kacheln anpassen~~ --> Ordnerpfad zu Abkürzungsverzeichnis im Skript aktualisieren
 - ~~Benennung vrt anpassen~~ --> Ordnerpfad zu Abkürzungsverzeichnis im Skript aktualisieren
-
-- es sollten nur Kacheln berechnet werden, die Daten enthalten, keine Leerkacheln berechnen --> Abgleichen mit Footprint vom VRT?
 - ~~Liste mit Kacheln --> Funktion mit erst Rasterkachel- und dann Footprintberechnung~~
-- gdal.parseCommandLine mit os.system ersetze
+- ~~gdal.parseCommandLine mit os.system ersetze~~
