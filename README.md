@@ -8,9 +8,10 @@
 3. Create subfolders 
 4. Build VRT from original images
 5. Read metadata of the input data
-   - projection
-   - number of bands        
-8. gdaltindex
+   - coordinate system/projection
+   - number of bands
+   - data type (8-bit, 16-bit...)       
+8. create input
 9. Split VRT into tiles
    - Tile size: 2000 x 2000 m
    - easting/northing of the lower left corner: even thousand (e.g. 614000 x 5782000)
