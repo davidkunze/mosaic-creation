@@ -8,3 +8,4 @@
    - name: prefix_llx_lly.tif (e.g. cog_614000_5782000.tif)
    - 
    **- reproject**   
+![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/d6c0414c-b070-45b2-9b32-a9e5a24c61df)
