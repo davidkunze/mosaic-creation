@@ -25,7 +25,7 @@
 10. Intersect tiles with the dissolved extent of input tiles (6.) ⟶ Remove the tiles that do not intersect
 11. Create COG tiles
 12. Metadata vector files
- - Vector files from COG tile extent without no data areas
+   - Vector files from COG tile extent without no data areas
    - dissolve of the vector files without no data areas
    - vector files from COG tile extent including no data areas 
 13. Appand metadata table (.csv) to metadata vector files
