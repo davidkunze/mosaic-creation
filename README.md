@@ -18,13 +18,18 @@
    - raster origin
    - raster width
    - raster hight
-9. Split
-   
-10. create inpu
-11. Split VRT into tiles
+9. Split VRT extent into tiles
    - Tile size: 2000 x 2000 m
    - easting/northing of the lower left corner: even thousand (e.g. 614000 x 5782000)
-   - name: prefix_llx_lly.tif (e.g. cog_614000_5782000.tif)
-   - 
-   **- reproject**   
+   - write into tile extents into a list
+10. Intersect tiles with the dissolved extent of input tiles (6.) ⟶ Remove the tiles that do not intersect
+11. Create COG tiles
+12. Metadata vector files
+   - Vector files from COG tile extent without no data areas
+   - dissolve of the vector files without no data areas
+   - vector files from COG tile extent including no data areas
+14. 
+15. Appand metadata table (.csv) to metadata vector files
+16. 
 
+   
