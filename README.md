@@ -29,18 +29,28 @@
 ![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/b366b805-b403-4ebf-96e4-8e82afa7937c)
 
 9. Intersect tiles with the dissolved extent of input tiles (6.) ⟶ Remove the tiles that do not intersect
-   -sdb
-![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/39004eb5-c5be-4fe3-9532-9247cb943f56)
-![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/aff56290-7e9c-4f33-90f6-f29de39e76f9)
 
+![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/39004eb5-c5be-4fe3-9532-9247cb943f56)
+   
+![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/aff56290-7e9c-4f33-90f6-f29de39e76f9)
 
 11. Create COG tiles
 12. Metadata vector files
    - Vector files from COG tile extent without no data areas
+   ![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/2ecb2f60-d06b-4832-badf-f83bf910bf32)
+
    - dissolve of the vector files without no data areas
+   ![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/6a2f3bc7-d53e-43f9-9bef-582e5aa3e179)
+
    - vector files from COG tile extent including no data areas 
+   ![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/48b95846-952c-484d-854e-116d20029803)
+
 12. Appand metadata table (.csv) to metadata vector files
+![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/6c9562f6-b2bf-43e3-b193-4a62e9a9dd5c)
+
 13. Create VRT from COG + overviews
+![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/e706efc9-da46-41b0-9a44-27eaa2621bb5)
+
 14. Remove temporary data
 
   
