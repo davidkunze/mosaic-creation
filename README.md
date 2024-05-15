@@ -26,12 +26,12 @@
    - Tile size: 2000 x 2000 m
    - easting/northing of the lower left corner: even thousand (e.g. 614000 x 5782000)
    - write into tile extents into a list
-![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/b366b805-b403-4ebf-96e4-8e82afa7937c)
+   
+   ![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/ca77c2bc-5d09-4d84-9def-8ed8837a781f)
+
 
 9. Intersect tiles with the dissolved extent of input tiles (6.) ⟶ Remove the tiles that do not intersect
-
-![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/39004eb5-c5be-4fe3-9532-9247cb943f56)
-   
+![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/39004eb5-c5be-4fe3-9532-9247cb943f56)  
 ![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/aff56290-7e9c-4f33-90f6-f29de39e76f9)
 
 11. Create COG tiles
