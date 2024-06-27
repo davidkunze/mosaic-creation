@@ -1,3 +1,4 @@
+**Orthos**
 - Kachelgröße geteilt durch Pixelgröße ergibt ungerade Zahl (z.B. 2000 m /0,07 m = 28571,43)
   - resamplingmethode muss angepasst werden --> nearest neighbour funktioniert nicht, da ungerade Zeile wegelassen wird und somit Leerzeilen/-spalten entstehen
   - Y:\David\vrt_cog\resampling_methods
@@ -21,3 +22,6 @@
 - ~~Benennung vrt anpassen~~ --> Ordnerpfad zu Abkürzungsverzeichnis im Skript aktualisieren
 - ~~Liste mit Kacheln --> Funktion mit erst Rasterkachel- und dann Footprintberechnung~~
 - ~~gdal.parseCommandLine mit os.system ersetze~~
+
+**BTK/Colormap Tiffs**
+- resampling method sollte so gewählt werden, dass die Rasterzellenwerte ganzzahlig bleiben --> nearest/ mode
