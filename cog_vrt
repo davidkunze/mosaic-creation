@@ -15,12 +15,12 @@ gdal.UseExceptions()
 
 start_time = time.time()
 
-path_data = r'Y:\David\vrt_cog\testdaten\duebener_heide_sgb2\daten'
+path_data = r'Y:\David\vrt_cog\testdaten\ei_b3_sellhorn_2016\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'st_flugzeug_2023_duebener-heide_dop_sgb2'
+tile_name = 'ni_flugzeug_2016_sellhorn_dop_sgb4'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
@@ -128,7 +128,7 @@ if not in_srs in [str(out_srs)]:
         warning =  '\n\n\n\n\n\n\n\n WARNHINWEIS! Ausgangsdaten haben kein Koordinatensystem zugewiesen, bitte nachprüfen, ob Daten vollständig und lagerichtig berechnet wurden! \n\n\n\n\n\n\n\n'
     else:
         ogr2ogrString = 'ogr2ogr -s_srs  EPSG:' + str(in_srs) + ' ' + '-t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent
-    print(ogr2ogrString)
+    # print(ogr2ogrString)
     subprocess.run(ogr2ogrString)    
     os.remove(inputdata_extent)
     inputdata_extent = inputdata_extent_proj
@@ -145,7 +145,9 @@ ulx, xres, xskew, uly, yskew, yres  = vrt_temp_ds_2.GetGeoTransform()
 # tranform width and height from count of pixel into map unit (for epsg "25832": metre)
 width = abs(int(vrt_temp_ds.RasterXSize*xres))
 height = abs(int(vrt_temp_ds.RasterYSize*yres))
-# print('width ',width, 'x height', height)
+print('width ',width, 'x height', height)
+
+
 # print(ulx, xres, xskew, uly, yskew, yres)
 
 tilesize = 2000
@@ -221,13 +223,12 @@ for i in range(ulx_int, ulx_int+width, tilesize):
         polygon_points.append([lrx, j])
         polygon_points.append([i, j])
         tiles_polygon.append(Polygon(polygon_points))
-        print(extentGeometry.Intersect(vectorGeometry))
         if extentGeometry.Intersect(vectorGeometry) == True:
             tiles.append(tile_ext)
             tiles_polygon_select.append(Polygon(polygon_points))
 
 
-print(tiles_polygon)
+# print(tiles_polygon)
 polygon=[]
 for x in tiles_polygon:
     polygon.append(geopandas.GeoDataFrame(crs='epsg:25832', geometry=[x]))
@@ -240,8 +241,8 @@ df_polygons = pandas.concat(polygon)
 df_polygons.to_file(filename=os.path.join(dir_vrt,'polygon_select.gpkg'), driver="GPKG")
 print(len(tiles_all))
 print(len(tiles))
-
-def tiling(input, out_path, extent, count_bands):
+ 
+def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
     i = 1
     bands = []
     while i < count_bands + 2:
@@ -252,17 +253,35 @@ def tiling(input, out_path, extent, count_bands):
     bands = ' '.join(bands[0:count_bands])
     output_name = tile_name+'_' +str(extent[0]) + "_" + str(extent[3])
     output = os.path.join(out_path, output_name + ".tif")
+    resamp_method ='nearest'
+
+    # if tile size divided by raster resolution is float the raster cell size needs to be adjusted to prevent empty rows/column between tiles
+    cell_count_x = tile_size/x_res # number of pixels per row
+    cell_count_y = tile_size/y_res # number of pixels per column
+    if (cell_count_x).is_integer() == False or (cell_count_y).is_integer()== False:
+        print(cell_count_x)
+        x1 = cell_count_x - int(cell_count_x) # get remaining pixel
+        x2 = x1*x_res # get remainder in crs unit (e.g. metre)
+        x3 = x2/int(cell_count_x) # remainder per pixel cell
+        xres = x_res + x3 # new cell size = original cell size + remainder per pixel cell
+        y1 = cell_count_y - int(cell_count_y) # get remaining pixel
+        y2 = y1*y_res # get remainder in crs unit (e.g. metre)
+        y3 = y2/int(cell_count_y) # remainder per pixel cell
+        yres = y_res + y3 # new cell size = original cell size + remainder per pixel cell
+        resamp_method = 'rms'
 
     # images will be compressed lossless with DEFLATE compression 
-    # overviews of the 8-bit images can be created with the more space-saving JPEG compression, compression method overviewa of 16-bit-images: DEFLATE  
+    # overviews of the 8-bit images can be created with the more space-saving JPEG compression
+        # the overview compression method of 16-bit-images is DEFLATE
     if dtype == 'Byte':
-        gdaltranString = 'gdal_translate -q -of COG -co COMPRESS=DEFLATE -co PREDICTOR=2 -a_srs EPSG:' + str(
-        out_srs) + ' ' + bands + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=JPEG -co OVERVIEW_RESAMPLING=bilinear -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output
+        comp = 'JPEG'
     else:
-        gdaltranString = 'gdal_translate -q -of COG -co COMPRESS=DEFLATE -co PREDICTOR=2 -a_srs EPSG:' + str(
-        out_srs) + ' ' + bands + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=DEFLATE -co OVERVIEW_RESAMPLING=bilinear -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output 
-    
-    # print(gdaltranString)
+        comp = 'DEFLATE'
+
+    # gdaltranString = 'gdal_translate -q -of COG -co COMPRESS=DEFLATE -co PREDICTOR=2 -r rms -a_srs EPSG:' + str(out_srs) + ' ' + bands + ' -tr ' + str(xres) + ' ' + str(yres) + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_RESAMPLING=nearest -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output
+
+    gdaltranString = 'gdal_translate -q -of COG -co COMPRESS=DEFLATE -co PREDICTOR=2 -r '+resamp_method+' -a_srs EPSG:' + str(out_srs) + ' ' + bands + ' -tr ' + str(xres) + ' ' + str(yres) + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_RESAMPLING=nearest -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output
+    print(gdaltranString)
     subprocess.run(gdaltranString)
     # create polygon from data extent
     footprint = os.path.join(dir_footprint, output_name + ".gpkg")
@@ -273,8 +292,8 @@ def tiling(input, out_path, extent, count_bands):
 # ###############
 if __name__ == '__main__':
     count = mp.cpu_count()
-    pool = mp.Pool(count-0)
-    args = [(vrt_temp, dir_cog, x, band_count) for x in tiles]
+    pool = mp.Pool(count-3)
+    args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres) for x in tiles]
     pool.starmap(tiling, args)
     pool.close()
 
