@@ -6,14 +6,17 @@
 |rasterio: buildoverviews: all levels in one command|very slow, similar to gdaladdo|16 to 512|good|good|no advantage to gdaladdio|
 
 # gdaladdo: all levels in one command (16 to 512)
+```python
 gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES  --config OVERVIEW_COMPRESS ZSTD ' + vrt + ' 16 32 64 128 256 512'
 subprocess.run(gdaladdoString)
-
+```
 # gdaladdo: all levels in one command (128 to 512)
+```python
 gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES  --config OVERVIEW_COMPRESS ZSTD ' + vrt + ' 128 256 512'
 subprocess.run(gdaladdoString)
-
+```
 # gdaladdo: one command per level (16 to 512)
+```python
 level = [16, 2, 2, 2, 2, 2]
 OVERVIEW_FILE = vrt_temp_2+'.ovr'
 ovr_list = []
@@ -32,3 +35,12 @@ for x in level:
         OVERVIEW_FILE = OVERVIEW_FILE
         ovr_list.append(OVERVIEW_FILE)
         time_level = time.time()
+```
+# rasterrio: buildoverviews (16 to 512)
+```python
+factors = [16, 32, 64, 128, 256, 512]
+dst = rasterio.open(vrt)
+dst.build_overviews(factors, Resampling.average)
+dst.update_tags(ns='rio_overview', resampling='average')
+dst.close()
+```
