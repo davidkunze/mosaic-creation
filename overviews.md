@@ -1,7 +1,7 @@
 |method|levels|processing time|perfomance qgis|perfomance arcgis|problems|
 |---|---|---|---|---|---|
 |gdaladdo: all levels in one command|very slow|16 to 512|good|good|additional storage needed due to smaller overview levels|
-|gdaladdo: all levels in one command|very slow|128 to 512|good|smaller levels bad, can probably not read overview from cog||
+|gdaladdo: all levels in one command|very slow|128 to 512|good|smaller levels very slow, arcgis probably can not read overview from cog||
 |gdaladdo: one command per level|slow|16 to 512|good|good|many .ovr, merging still problem|
 |rasterio: buildoverviews: all levels in one command|very slow, similar to gdaladdo|16 to 512|good|good|no advantage to gdaladdio|
 
