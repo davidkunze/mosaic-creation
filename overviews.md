@@ -1,9 +1,11 @@
+Create overviews --> tested with Solling data from 2023
+
 |method|levels|processing time|perfomance qgis|perfomance arcgis|problems|
 |---|---|---|---|---|---|
-|gdaladdo: all levels in one command|very slow|16 to 512|good|good|additional storage needed due to smaller overview levels|
+|gdaladdo: all levels in one command|very slow (ca. 23 h)|16 to 512|good|good|additional storage needed due to smaller overview levels|
 |gdaladdo: all levels in one command|very slow|128 to 512|good|smaller levels very slow, arcgis probably can not read overview from cog||
-|gdaladdo: one command per level|slow|16 to 512|good|good|several ovr-files, merging still problem|
-|rasterio: buildoverviews: all levels in one command|very slow, similar to gdaladdo|16 to 512|good|good|no advantage to gdaladdo|
+|gdaladdo: one command per level|slow (ca. 19 h)|16 to 512|good|good|several ovr-files, merging still problem|
+|rasterio: buildoverviews: all levels in one command|very slow, similar to gdaladdo (ca. 23 h)|16 to 512|good|good|no advantage to gdaladdo|
 
 # gdaladdo: all levels in one command (16 to 512)
 ```python
@@ -39,6 +41,12 @@ for x in level:
 Merging method 1:
 - gdal_merge:
 - issue: result not readable
+```python
+over_merge = vrt[:-4]+'.tif'
+gdal_merge_string = 'gdal_merge -of gtiff --config GDAL_NUM_THREADS ALL_CPUS -o ' + over_merge + ' ' + ' '.join(ovr_list)
+print(gdal_merge_string)
+subprocess.run(gdal_merge_string)
+```
 
 Merging method 2:
 - create empty vrt with the extent of input data
