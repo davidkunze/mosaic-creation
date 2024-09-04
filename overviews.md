@@ -1,4 +1,4 @@
-Create overviews --> tested with Solling data from 2023
+# Create overviews --> tested with Solling data from 2023
 
 |method|levels|processing time|perfomance qgis|perfomance arcgis|problems|
 |---|---|---|---|---|---|
@@ -84,6 +84,7 @@ ds = None
 
 gdaltransString = 'gdal_translate ' + vrt_temp + ' ' + vrt[:-4]+ '.tif' + ' -co COMPRESS=ZSTD -co BIGTIFF=YES -co COPY_SRC_OVERVIEWS=YES --config OVERVIEW_COMPRESS ZSTD --config GDAL_NUM_THREADS ALL_CPUS' 
 subprocess.run(gdaltransString)
+os.rename(vrt[0],ovr_list[0][:-4]+'.vrt.ovr')
 ```
 # rasterrio: buildoverviews (16 to 512)
 ```python
