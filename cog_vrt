@@ -10,17 +10,19 @@ import geopandas
 import pandas
 import numpy
 import subprocess
+# import rasterio
+# import rioxarray as rxr
 from osgeo import gdal, osr, ogr
 gdal.UseExceptions()
 
 start_time = time.time()
 
-path_data = r'Y:\David\vrt_cog\testdaten\gorhde_landwehr\daten'
+path_data = r'Y:\David\vrt_cog\testdaten\ei_b3_sellhorn_2016\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2015_gorhde_landwehr_dop_sgb4'
+tile_name = 'ni_flugzeug_2016_sellhorn_dop_sgb4'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
@@ -90,6 +92,8 @@ band_count = vrt_temp_ds.RasterCount
 # get nodata value
 if nodata_value == '':
     nodata_value = vrt_temp_ds.GetRasterBand(1).GetNoDataValue()
+    # rxr_vrt = rxr.open_rasterio(vrt_temp)
+    # rxr_vrt.rio.write_nodata(nodata_value, inplace=True)
 else:
     i = 1
     nodata_list = []
@@ -221,12 +225,12 @@ for i in range(ulx_int, ulx_int+width, tilesize):
         del vector
 polygon=[]
 for x in tiles_polygon:
-    polygon.append(geopandas.GeoDataFrame(crs='epsg:25832', geometry=[x]))
+    polygon.append(geopandas.GeoDataFrame(crs='epsg:'+str(out_srs), geometry=[x]))
 df_polygons = pandas.concat(polygon)        
 df_polygons.to_file(filename=os.path.join(dir_vrt,'polygon.gpkg'), driver="GPKG")
 polygon=[]
 for x in tiles_polygon_select:
-    polygon.append(geopandas.GeoDataFrame(crs='epsg:25832', geometry=[x]))
+    polygon.append(geopandas.GeoDataFrame(crs='epsg:'+str(out_srs), geometry=[x]))
 df_polygons = pandas.concat(polygon)        
 df_polygons.to_file(filename=os.path.join(dir_vrt,'polygon_select.gpkg'), driver="GPKG")
 print('all tiles: ' + str(len(tiles_all)))
@@ -264,8 +268,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
     # overviews of the 8-bit images can be created with the more space-saving JPEG compression
         # the overview compression method of 16-bit-images is DEFLATE
     if dtype == 'Byte':
-        # comp = 'JPEG'
-        comp = 'DEFLATE'
+        comp = 'JPEG'
     else:
         comp = 'DEFLATE'
     
@@ -281,9 +284,9 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
 # create 2x2 km cog tiles from vrt that was created from input data  
 if __name__ == '__main__':
     count = mp.cpu_count()
-    pool = mp.Pool(count-1)
+    pool = mp.Pool(count-5)
     args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres) for x in tiles]
-    pool.starmap(tiling, args)
+    # pool.starmap(tiling, args)
     pool.close()
 
     # create extent vector layer which contains following three layers
@@ -308,6 +311,7 @@ if __name__ == '__main__':
     # merge all tile outlines 
     df_merged = pandas.concat(tiles_valid)
     df_merged['geometry'] = df_merged['geometry'].make_valid().buffer(xres, join_style = 2).buffer(-1*xres, join_style = 2)
+    df_merged = df_merged.dissolve(by='path')
     df_merged.to_file(extent, layer='footprint_outline', driver="GPKG")
     # dissolve tile outlines to dataset outline
     df_outline = df_merged.dissolve(by='ID')
@@ -362,7 +366,7 @@ if __name__ == '__main__':
     subprocess.run(bat_file)
 
     # create vrt overviews
-    gdaladdoString = 'gdaladdo -r average --config GDAL_NUM_THREADS ALL_CPUS --config BIGTIFF IF_SAFER --config OVERVIEW_COMPRESS DEFLATE ' + vrt + ' 16 32 64 128 256 512'
+    gdaladdoString = 'gdaladdo -r average --config GDAL_NUM_THREADS ALL_CPUS --config BIGTIFF IF_SAFER --config OVERVIEW_COMPRESS DEFLATE ' + vrt + ' 128 256 512'
     # gdaladdoString = 'gdaladdo -r average --config GDAL_NUM_THREADS ALL_CPUS --config BIGTIFF IF_SAFER --config OVERVIEW_COMPRESS DEFLATE --config GDAL_TIFF_INTERNAL_MASK YES ' + vrt + ' 16 32 64 128 256 512'
     subprocess.run(gdaladdoString)
 
