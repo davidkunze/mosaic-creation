@@ -17,12 +17,12 @@ gdal.UseExceptions()
 
 start_time = time.time()
 
-path_data = r'Y:\David\vrt_cog\testdaten\ei_b3_sellhorn_2016\daten'
+path_data = r'Y:\David\vrt_cog\testdaten\lidar_solling_2023\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2016_sellhorn_dop_sgb4'
+tile_name = 'ni_flugzeug_2023_solling_ndom_nlf'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
@@ -150,16 +150,16 @@ tilesize = 2000
 
 # Convert height to a number with an even number of thousands
 if (int(str(height)[:-3]) % 2) == 0:
-    height = int(str(height)[:-3]+"000")+2000
+    height = int(str(height)[:-3]+"000")+4000
 else:
-    height = int(str(height)[:-3]+"000")+1000
+    height = int(str(height)[:-3]+"000")+3000
 
 # Convert width to a number with an even number of thousands
 print('width: ' + str(width))
 if (int(str(width)[:-3]) % 2) == 0:
     width = int(str(width)[:-3]+"000")+4000
 else:
-    width = int(str(width)[:-3]+"000")+1000
+    width = int(str(width)[:-3]+"000")+3000
 print('width_int_add: ' + str(width))
 
 # Convert ulx, uly to a number with an even number of thousands
@@ -286,7 +286,7 @@ if __name__ == '__main__':
     count = mp.cpu_count()
     pool = mp.Pool(count-5)
     args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres) for x in tiles]
-    # pool.starmap(tiling, args)
+    pool.starmap(tiling, args)
     pool.close()
 
     # create extent vector layer which contains following three layers
@@ -356,6 +356,7 @@ if __name__ == '__main__':
     tif = []
     for x in input_windows_path:
         tif.append(str(x))
+    tile_sample = tif[1]
     tif= ' '.join(tif)
 
     vrt = os.path.join(dir_vrt, vrt_name+'.vrt')
@@ -366,8 +367,17 @@ if __name__ == '__main__':
     subprocess.run(bat_file)
 
     # create vrt overviews
-    gdaladdoString = 'gdaladdo -r average --config GDAL_NUM_THREADS ALL_CPUS --config BIGTIFF IF_SAFER --config OVERVIEW_COMPRESS DEFLATE ' + vrt + ' 128 256 512'
-    # gdaladdoString = 'gdaladdo -r average --config GDAL_NUM_THREADS ALL_CPUS --config BIGTIFF IF_SAFER --config OVERVIEW_COMPRESS DEFLATE --config GDAL_TIFF_INTERNAL_MASK YES ' + vrt + ' 16 32 64 128 256 512'
+    tile_sample = gdal.Open(tile_sample)
+    tile_sample_band = tile_sample.GetRasterBand(1)
+    tile_sample_band.GetOverviewCount
+    # tile_sample_overview = tile_sample_band.GetOverview(3)
+    # arr1 = tile_sample_overview.ReadAsArray()
+    for x in tile_sample.GetMetadata():
+        print(x)
+    dir(tile_sample.GetDescription())
+    
+    # gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config BIGTIFF IF_SAFER -minsize 128 --config OVERVIEW_COMPRESS ZSTD ' + vrt
+    gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES  --config OVERVIEW_COMPRESS ZSTD ' + vrt + ' 16 32 64 128 256 512'
     subprocess.run(gdaladdoString)
 
     # remove temporary layers
