@@ -36,6 +36,47 @@ for x in level:
         ovr_list.append(OVERVIEW_FILE)
         time_level = time.time()
 ```
+Merging method 1:
+- gdal_merge:
+- issue: result not readable
+
+Merging method 2:
+- create empty vrt with the extent of input data
+- empty vrt is named like ovr-files and can recognise the ovr-files as overviews
+- translate vrt with the option "-co COPY_SRC_OVERVIEWS=YES" to tif
+- rename .tif to .vrt.ovr
+```python
+vrt_temp_ds = gdal.Open(vrt_temp)
+proj = osr.SpatialReference(wkt=vrt_temp_ds.GetProjection())
+in_srs = proj.GetAttrValue('AUTHORITY',1)
+band_count = vrt_temp_ds.RasterCount
+band = vrt_temp_ds.GetRasterBand(1)
+dtype = band.DataType
+ulx, xres, xskew, uly, yskew, yres  = vrt_temp_ds.GetGeoTransform()
+width = abs(int(vrt_temp_ds.RasterXSize))
+height = abs(int(vrt_temp_ds.RasterYSize))
+driver = gdal.GetDriverByName('vrt')
+vrt_temp_ds = None
+os.remove(vrt_temp)
+
+liste =[vrt_temp, width, height, band_count, dtype]
+for x in liste:
+    print(x)
+
+ds = driver.Create(vrt_temp, width, height, band_count, dtype)
+ds.SetProjection('EPSG:'+in_srs)
+nodata_value = 65535
+ds.SetGeoTransform([ulx, xres, 0, uly, 0, yres])
+x = 1
+while x <= band_count:
+    ds.GetRasterBand(x).SetNoDataValue(nodata_value)
+    print(x)
+    x+=1
+ds = None
+
+gdaltransString = 'gdal_translate ' + vrt_temp + ' ' + vrt[:-4]+ '.tif' + ' -co COMPRESS=ZSTD -co BIGTIFF=YES -co COPY_SRC_OVERVIEWS=YES --config OVERVIEW_COMPRESS ZSTD --config GDAL_NUM_THREADS ALL_CPUS' 
+subprocess.run(gdaltransString)
+```
 # rasterrio: buildoverviews (16 to 512)
 ```python
 factors = [16, 32, 64, 128, 256, 512]
