@@ -1,9 +1,10 @@
 **Orthos**
-- Kachelgröße geteilt durch Pixelgröße ergibt ungerade Zahl (z.B. 2000 m /0,07 m = 28571,43)
-  - resamplingmethode muss angepasst werden --> nearest neighbour funktioniert nicht, da ungerade Zeile wegelassen wird und somit Leerzeilen/-spalten entstehen
-  - Y:\David\vrt_cog\resampling_methods
-- es sollten nur Kacheln berechnet werden, die Daten enthalten, keine Leerkacheln berechnen --> Abgleichen mit Footprint vom VRT?
+- overviews --> bei mehr als 5 bänder nur püberioschten der ersten 5 bänder berechnen
 - COG-Berechnung sehr arbeitsspeicherintensiv --> for start einer neuen Kachel, Test, ob ausreichend Arbeitsspeicher zur Verfügung steht
+- ~~Kachelgröße geteilt durch Pixelgröße ergibt ungerade Zahl (z.B. 2000 m /0,07 m = 28571,43)
+  - resamplingmethode muss angepasst werden --> nearest neighbour funktioniert nicht, da ungerade Zeile wegelassen wird und somit Leerzeilen/-spalten entstehen
+  - Y:\David\vrt_cog\resampling_methods~~
+- ~~es sollten nur Kacheln berechnet werden, die Daten enthalten, keine Leerkacheln berechnen --> Abgleichen mit Footprint vom VRT?~~
 - ~~Fehlerhafte Lückenpixel bei Übersichten der COGs~~
 - ~~Overview_Kompression mit JPEG --> Probleme mit 16 Bit Bildern~~
 -   ~~Check datatype--> if < 8 bit than JPEG if > 8 bit than andere Overview Kompression~~
