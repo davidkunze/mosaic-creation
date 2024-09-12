@@ -1,4 +1,5 @@
 **Orthos**
+- vrt: relative Pfade
 - overviews --> bei mehr als 5 bänder nur püberioschten der ersten 5 bänder berechnen
 - COG-Berechnung sehr arbeitsspeicherintensiv --> for start einer neuen Kachel, Test, ob ausreichend Arbeitsspeicher zur Verfügung steht
 - ~~Kachelgröße geteilt durch Pixelgröße ergibt ungerade Zahl (z.B. 2000 m /0,07 m = 28571,43)
