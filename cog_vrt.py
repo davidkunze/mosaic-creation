@@ -106,7 +106,7 @@ else:
 
 # get input data extent to check which output tiles contain data
 inputdata_extent = os.path.join(dir_vrt, 'inputdata_extent.gpkg') 
-gdaltindexString = 'gdaltindex -f "GKPG" ' + inputdata_extent +' --optfile ' + input_list_txt
+gdaltindexString = 'gdaltindex -f "GPKG" ' + inputdata_extent +' --optfile ' + input_list_txt
 subprocess.run(gdaltindexString)
 
 ### reproject raw data if not EPSG: 25832
@@ -266,6 +266,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
 
     # images will be compressed lossless with DEFLATE compression 
     # overviews of the 8-bit images can be created with the more space-saving JPEG compression
+        # JPEG compression can cause the problem of empty cells in dark areas if that happens use deflate
         # the overview compression method of 16-bit-images is DEFLATE
     if dtype == 'Byte':
         comp = 'JPEG'
