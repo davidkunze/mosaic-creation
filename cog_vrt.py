@@ -17,12 +17,12 @@ gdal.UseExceptions()
 
 start_time = time.time()
 
-path_data = r'Y:\David\vrt_cog\testdaten\lidar_solling_2023\daten'
+path_data = r'\\lb-srv\Luftbilder\luftbild\ni\flugzeug\2022\solling_nlf_fe_lwk\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2023_solling_ndom_nlf'
+tile_name = 'ni_flugzeug_2022_solling_dop_nlf_lwk'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
@@ -65,13 +65,13 @@ dir_footprint = os.path.join(path_out,footprint_folder)
 
 # create temporary vrt from raw data
 vrt_temp = os.path.join(dir_vrt, 'temp.vrt')
-input_data_str = ' '.join(input_data)
-buildvrtString = 'gdalbuildvrt -overwrite ' + vrt_temp + ' ' + input_data_str
-bat_file = os.path.join(dir_vrt, 'batch.bat')
-with open(bat_file, 'w') as file:
-    file.write(buildvrtString)
+input_data_str = '\n'.join(input_data)
+input_list_txt = os.path.join(dir_vrt, 'input_list.txt')
+with open(input_list_txt, 'w') as file:
+    file.write(input_data_str)
     file.close()
-subprocess.run(bat_file)
+buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt_temp
+subprocess.run(buildvrtString)
 
 
 gdalinfoStrng = 'gdalinfo '+vrt_temp
@@ -100,20 +100,14 @@ else:
     while i < band_count+1:
         nodata_list.append(nodata_value)
         i += 1
-    buildvrtString = 'gdalbuildvrt -srcnodata "' + ' '.join(nodata_list) + '" -overwrite ' + vrt_temp + ' ' + input_data_str
-    with open(bat_file, 'w') as file:
-        file.write(buildvrtString)
-        file.close()
-    subprocess.run(bat_file)
+    buildvrtString = 'gdalbuildvrt -srcnodata "' + ' '.join(nodata_list) + ' -overwrite -input_file_list '+ input_list_txt + ' ' + vrt_temp
+    subprocess.run(buildvrtString)
+
 
 # get input data extent to check which output tiles contain data
 inputdata_extent = os.path.join(dir_vrt, 'inputdata_extent.gpkg') 
-gdaltindexString = 'gdaltindex ' + inputdata_extent + ' ' + input_data_str
-bat_file = os.path.join(dir_vrt, 'batch.bat')
-with open(bat_file, 'w') as file:
-    file.write(gdaltindexString)
-    file.close()
-subprocess.run(bat_file)
+gdaltindexString = 'gdaltindex -f "GKPG" ' + inputdata_extent +' --optfile ' + input_list_txt
+subprocess.run(gdaltindexString)
 
 ### reproject raw data if not EPSG: 25832
 # function to check whether raw data is stored in subfolders
@@ -127,10 +121,10 @@ if not in_srs in [str(out_srs)]:
     # os.remove(vrt_temp)
     vrt_temp = vrt_temp_proj
     inputdata_extent_proj = os.path.join(dir_vrt, 'inputdata_extent_' + str(out_srs) + '.gpkg') 
-    ogr2ogrString = 'ogr2ogr -a_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent
+    ogr2ogrString = 'ogr2ogr -f "GPKG" -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
     warning =  '\n\n\n\n\n WARNHINWEIS! Ausgangsdaten haben kein Koordinatensystem zugewiesen, bitte nachprüfen, ob Daten vollständig und lagerichtig berechnet wurden! \n\n\n\n\n'
     subprocess.run(ogr2ogrString)    
-    os.remove(inputdata_extent)
+    # os.remove(inputdata_extent)
     inputdata_extent = inputdata_extent_proj
 dataframe = geopandas.read_file(inputdata_extent, layer='inputdata_extent')
 dataframe = dataframe.dissolve(by=None)
@@ -149,6 +143,9 @@ print('ulx_int+width: '+str(int(ulx+width)))
 tilesize = 2000
 
 # Convert height to a number with an even number of thousands
+if height < 1000:
+    height = 1000
+
 if (int(str(height)[:-3]) % 2) == 0:
     height = int(str(height)[:-3]+"000")+4000
 else:
@@ -156,6 +153,9 @@ else:
 
 # Convert width to a number with an even number of thousands
 print('width: ' + str(width))
+if width < 1000:
+    width = 1000
+
 if (int(str(width)[:-3]) % 2) == 0:
     width = int(str(width)[:-3]+"000")+4000
 else:
@@ -281,7 +281,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
 
 
 # ###############
-# create 2x2 km cog tiles from vrt that was created from input data  
+# create 2x2 km cog tiles from temporary vrt that was created from input data  
 if __name__ == '__main__':
     count = mp.cpu_count()
     pool = mp.Pool(count-5)
@@ -356,29 +356,67 @@ if __name__ == '__main__':
     tif = []
     for x in input_windows_path:
         tif.append(str(x))
-    tile_sample = tif[1]
-    tif= ' '.join(tif)
+    tile_sample = tif[0]
+    tif= '\n'.join(tif)
 
-    vrt = os.path.join(dir_vrt, vrt_name+'.vrt')
-    buildvrtString = 'gdalbuildvrt -overwrite '+vrt+' '+tif
-    with open(bat_file, 'w') as file:
-        file.write(buildvrtString)
+    with open(input_list_txt, 'w') as file:
+        file.write(tif)
         file.close()
-    subprocess.run(bat_file)
+    buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
+    subprocess.run(buildvrtString)
 
-    # create vrt overviews
-    tile_sample = gdal.Open(tile_sample)
-    tile_sample_band = tile_sample.GetRasterBand(1)
-    tile_sample_band.GetOverviewCount
-    # tile_sample_overview = tile_sample_band.GetOverview(3)
-    # arr1 = tile_sample_overview.ReadAsArray()
-    for x in tile_sample.GetMetadata():
-        print(x)
-    dir(tile_sample.GetDescription())
+
+
+    # # create vrt overviews
+    # tile_sample = gdal.Open(tile_sample)
+    # tile_sample_band = tile_sample.GetRasterBand(1)
+    # tile_sample_band.GetOverviewCount
+    # # tile_sample_overview = tile_sample_band.GetOverview(3)
+    # # arr1 = tile_sample_overview.ReadAsArray()
+    # for x in tile_sample.GetMetadata():
+    #     print(x)
+    # dir(tile_sample.GetDescription())
     
-    # gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config BIGTIFF IF_SAFER -minsize 128 --config OVERVIEW_COMPRESS ZSTD ' + vrt
-    gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES  --config OVERVIEW_COMPRESS ZSTD ' + vrt + ' 16 32 64 128 256 512'
-    subprocess.run(gdaladdoString)
+    # # gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config BIGTIFF IF_SAFER -minsize 128 --config OVERVIEW_COMPRESS ZSTD ' + vrt
+    # gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES  --config OVERVIEW_COMPRESS ZSTD ' + vrt + ' 16 32 64 128 256 512'
+    # subprocess.run(gdaladdoString)
+
+    level = [16, 2, 2, 2, 2, 2]
+    ovr_list = []
+
+    for x in level:
+        if x == level[0]:
+            gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES --config OVERVIEW_COMPRESS ZSTD ' + vrt + ' ' + str(x)
+            print(gdaladdoString)
+            subprocess.run(gdaladdoString)
+            OVERVIEW_FILE = vrt+'.ovr'
+            ovr_list.append(OVERVIEW_FILE)
+            time_level = time.time()
+        else:
+            gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES --config OVERVIEW_COMPRESS ZSTD ' + OVERVIEW_FILE + ' ' + str(x)
+            print(gdaladdoString)
+            subprocess.run(gdaladdoString)
+            OVERVIEW_FILE = OVERVIEW_FILE+'.ovr'
+            ovr_list.append(OVERVIEW_FILE)
+            time_level = time.time()
+            ovr_tif =[]
+
+    for x in ovr_list:
+        x_split = x.split('.vrt.ovr')
+        new_name =  x_split[0]+'2.tif'+x_split[1]
+        os.rename(x, new_name)
+        ovr_tif.append(new_name)
+        # os.rename(new_name, x)
+
+    ovr = ovr_tif[0]
+    ds = gdal.Open(ovr)
+    ds.SetProjection('EPSG:'+str(out_srs))
+    ds.SetGeoTransform([ulx, level[0]*xres, 0, uly, 0, level[0]*yres])
+    ds = None
+    gdaltransString = 'gdal_translate ' + ovr + ' ' + vrt[:-4]+ '.tif' + ' -co COMPRESS=ZSTD -co BIGTIFF=YES -co COPY_SRC_OVERVIEWS=YES --config OVERVIEW_COMPRESS ZSTD --config GDAL_NUM_THREADS ALL_CPUS' 
+    subprocess.run(gdaltransString)
+    ovr_final = vrt[:-4]+'.vrt.ovr'
+    os.rename(vrt[:-4]+ '.tif',ovr_final)
 
     # remove temporary layers
     vector_list = glob(os.path.join(dir_footprint, '*'))
@@ -386,13 +424,14 @@ if __name__ == '__main__':
         if x != extent:
             os.remove(x)
 
-    vector_list = glob(os.path.join(dir_vrt, '*'))
-    for x in vector_list:
-        if not os.path.basename(x).startswith(vrt_name):
+    delete_list = glob(os.path.join(dir_vrt, '*'))
+    for x in delete_list:
+        if not x in (vrt, ovr_final):
             openfile = open(x)
             openfile.close()
             print(x)
             os.remove(x)
+
 
     hours, rem = divmod(time.time() - start_time, 3600)
     minutes, seconds = divmod(rem, 60)
