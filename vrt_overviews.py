@@ -1,4 +1,4 @@
- import os
+import os
 import sys
 from glob import glob
 import pathlib
@@ -46,6 +46,7 @@ for x in input_windows_path:
 tile_sample = tif[0]
 tif= '\n'.join(tif)
 
+input_list_txt = os.path.join(dir_vrt, 'input_list.txt')
 with open(input_list_txt, 'w') as file:
     file.write(tif)
     file.close()

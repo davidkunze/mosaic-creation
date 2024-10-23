@@ -74,8 +74,6 @@ with open(input_list_txt, 'w') as file:
 buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt_temp
 subprocess.run(buildvrtString)
 
-
-
 folder_list.append(os.path.basename(vrt_temp))
 
 ### get metadata of the input data
