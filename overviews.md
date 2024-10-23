@@ -86,6 +86,30 @@ gdaltransString = 'gdal_translate ' + vrt_temp + ' ' + vrt[:-4]+ '.tif' + ' -co 
 subprocess.run(gdaltransString)
 os.rename(vrt[0],ovr_list[0][:-4]+'.vrt.ovr')
 ```
+
+Merging Method 3:
+```python
+ovr_tif =[]
+for x in ovr_list:
+    x_split = x.split('.vrt.ovr')
+    new_name =  x_split[0]+'.tif'+x_split[1]
+    os.rename(x, new_name)
+    ovr_tif.append(new_name)
+    # os.rename(new_name, x)
+
+ovr = ovr_tif[0]
+ds = gdal.Open(ovr)
+ds.SetProjection('EPSG:'+in_srs)
+ds.SetGeoTransform([ulx, level[0]*xres, 0, uly, 0, level[0]*yres])
+ds = None
+gdaltransString = 'gdal_translate ' + ovr + ' ' + vrt[:-4]+ '.tif' + ' -co COMPRESS=ZSTD -co BIGTIFF=YES -co COPY_SRC_OVERVIEWS=YES --config OVERVIEW_COMPRESS ZSTD --config GDAL_NUM_THREADS ALL_CPUS' 
+subprocess.run(gdaltransString)
+os.rename(vrt[:-4]+ '.tif',vrt[:-4]+'.vrt.ovr')
+
+gdalindex_string = 'gdaltindex ' + vrt +'.gpkg '+tif
+subprocess.run(gdalindex_string)
+```
+
 # rasterrio: buildoverviews (16 to 512)
 ```python
 factors = [16, 32, 64, 128, 256, 512]

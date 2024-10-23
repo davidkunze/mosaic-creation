@@ -1,9 +1,11 @@
 **Orthos**
-- overviews --> bei mehr als 5 bänder nur püberioschten der ersten 5 bänder berechnen
+- relative path in vrt  --> https://gis.stackexchange.com/questions/155237/where-vrt-files-store-the-location-of-the-tiles
+- Kachel-geopackage: relative statt absolute pfade in Attributtabelle
+- overviews --> bei mehr als 5 bänder nur übersichten der ersten 5 bänder berechnen
 - COG-Berechnung sehr arbeitsspeicherintensiv --> for start einer neuen Kachel, Test, ob ausreichend Arbeitsspeicher zur Verfügung steht
-- ~~Kachelgröße geteilt durch Pixelgröße ergibt ungerade Zahl (z.B. 2000 m /0,07 m = 28571,43)
-  - resamplingmethode muss angepasst werden --> nearest neighbour funktioniert nicht, da ungerade Zeile wegelassen wird und somit Leerzeilen/-spalten entstehen
-  - Y:\David\vrt_cog\resampling_methods~~
+- ~~Kachelgröße geteilt durch Pixelgröße ergibt ungerade Zahl (z.B. 2000 m /0,07 m = 28571,43)~~
+  - ~~resamplingmethode muss angepasst werden --> nearest neighbour funktioniert nicht, da ungerade Zeile wegelassen wird und somit Leerzeilen/-spalten entstehen~~
+  - ~~Y:\David\vrt_cog\resampling_methods~~
 - ~~es sollten nur Kacheln berechnet werden, die Daten enthalten, keine Leerkacheln berechnen --> Abgleichen mit Footprint vom VRT?~~
 - ~~Fehlerhafte Lückenpixel bei Übersichten der COGs~~
 - ~~Overview_Kompression mit JPEG --> Probleme mit 16 Bit Bildern~~
@@ -18,7 +20,7 @@
 - ~~.img, .png sollte als Importformat erkannt werden~~
 - ~~Ordnerberezeichnung muss angepasst werden~~
   - ~~footprints in eigenen Ordner? Ordnername --> KonGeo~~
-- Benennung der Vectorlayer nochmal anpassen
+- ~~Benennung der Vectorlayer nochmal anpassen~~
 - ~~Benennung cog-kacheln anpassen~~ --> Ordnerpfad zu Abkürzungsverzeichnis im Skript aktualisieren
 - ~~Benennung vrt anpassen~~ --> Ordnerpfad zu Abkürzungsverzeichnis im Skript aktualisieren
 - ~~Liste mit Kacheln --> Funktion mit erst Rasterkachel- und dann Footprintberechnung~~
