@@ -17,19 +17,20 @@ gdal.UseExceptions()
 
 start_time = time.time()
 
-path_data = r'\\lb-srv\Luftbilder\luftbild\ni\flugzeug\2022\solling_nlf_fe_lwk\daten'
+path_data = r'\\lb-srv\Luftbilder\luftbild\ni\flugzeug\2022\harz_nlf_fe_np\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2022_solling_dop_nlf_lwk'
+tile_name = 'ni_flugzeug_2022_harz_dop_nlf_np_harz'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
 vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
-nodata_value = '' 
+nodata_value = '65535' 
 
+in_srs_specified = 25832 #in some cases, the coordinate system does not apper GDAL-readable, in such cases, specify coordinate system 
 out_srs = 25832 #EPSG-code of output projection
 
 path_meta = os.path.join(os.path.dirname(path_data),"doku")
@@ -74,8 +75,7 @@ buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + '
 subprocess.run(buildvrtString)
 
 
-gdalinfoStrng = 'gdalinfo '+vrt_temp
-# subprocess.run(gdalinfoStrng)
+
 folder_list.append(os.path.basename(vrt_temp))
 
 ### get metadata of the input data
@@ -100,8 +100,9 @@ else:
     while i < band_count+1:
         nodata_list.append(nodata_value)
         i += 1
-    buildvrtString = 'gdalbuildvrt -srcnodata "' + ' '.join(nodata_list) + ' -overwrite -input_file_list '+ input_list_txt + ' ' + vrt_temp
+    buildvrtString = 'gdalbuildvrt -srcnodata "' + ' '.join(nodata_list) + '" -overwrite -input_file_list '+ input_list_txt + ' ' + vrt_temp
     subprocess.run(buildvrtString)
+    print('nodata is existing:'+nodata_value)
 
 
 # get input data extent to check which output tiles contain data
@@ -112,16 +113,18 @@ subprocess.run(gdaltindexString)
 ### reproject raw data if not EPSG: 25832
 # function to check whether raw data is stored in subfolders
 print('in_srs: ' + str(in_srs))
-print('out_srs: ' +str(out_srs))
+print('out_srs: ' + str(out_srs))
 warning = ''
 if not in_srs in [str(out_srs)]:
+    if in_srs == None:
+        in_srs = in_srs_specified
     vrt_temp_proj = os.path.join(dir_vrt, 'temp_'+str(out_srs)+'.vrt')
-    gdalwarpString = 'gdalwarp -of VRT -t_srs EPSG:' + str(out_srs) + ' ' + vrt_temp + ' ' + vrt_temp_proj
+    gdalwarpString = 'gdalwarp -of VRT -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + vrt_temp + ' ' + vrt_temp_proj
     subprocess.run(gdalwarpString)
     # os.remove(vrt_temp)
     vrt_temp = vrt_temp_proj
     inputdata_extent_proj = os.path.join(dir_vrt, 'inputdata_extent_' + str(out_srs) + '.gpkg') 
-    ogr2ogrString = 'ogr2ogr -f "GPKG" -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
+    ogr2ogrString = 'ogr2ogr -f "GPKG" -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
     warning =  '\n\n\n\n\n WARNHINWEIS! Ausgangsdaten haben kein Koordinatensystem zugewiesen, bitte nachprüfen, ob Daten vollständig und lagerichtig berechnet wurden! \n\n\n\n\n'
     subprocess.run(ogr2ogrString)    
     # os.remove(inputdata_extent)
@@ -285,7 +288,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
 # create 2x2 km cog tiles from temporary vrt that was created from input data  
 if __name__ == '__main__':
     count = mp.cpu_count()
-    pool = mp.Pool(count-5)
+    pool = mp.Pool(count-4)
     args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres) for x in tiles]
     pool.starmap(tiling, args)
     pool.close()
@@ -363,6 +366,7 @@ if __name__ == '__main__':
     with open(input_list_txt, 'w') as file:
         file.write(tif)
         file.close()
+    vrt = os.path.join(dir_vrt, vrt_name + '.vrt')
     buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
     subprocess.run(buildvrtString)
 
