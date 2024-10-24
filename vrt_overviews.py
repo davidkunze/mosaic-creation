@@ -27,6 +27,8 @@ tile_name = 'ni_flugzeug_2022_harz_dop_nlf_np_harz'
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
 vrt_name = tile_name
+out_srs = 25832
+
 
 path_meta = os.path.join(os.path.dirname(path_data),"doku")
 cog_folder = 'kacheln'
@@ -72,14 +74,17 @@ for x in level:
         OVERVIEW_FILE = OVERVIEW_FILE+'.ovr'
         ovr_list.append(OVERVIEW_FILE)
         time_level = time.time()
-        ovr_tif =[]
+ovr_tif =[]
 
 for x in ovr_list:
     x_split = x.split('.vrt.ovr')
     new_name =  x_split[0]+'2.tif'+x_split[1]
     os.rename(x, new_name)
     ovr_tif.append(new_name)
-    # os.rename(new_name, x)
+    os.rename(new_name, x)
+
+vrt_ds = gdal.Open(vrt)
+ulx, xres, xskew, uly, yskew, yres  = vrt_ds.GetGeoTransform()
 
 ovr = ovr_tif[0]
 ds = gdal.Open(ovr)
@@ -90,3 +95,7 @@ gdaltransString = 'gdal_translate ' + ovr + ' ' + vrt[:-4]+ '.tif' + ' -co COMPR
 subprocess.run(gdaltransString)
 ovr_final = vrt[:-4]+'.vrt.ovr'
 os.rename(vrt[:-4]+ '.tif',ovr_final)
+
+for x in ovr_tif:
+    os.remove(x)
+    os.remove(input_list_txt)
