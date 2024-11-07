@@ -17,12 +17,13 @@ gdal.UseExceptions()
 
 start_time = time.time()
 
-path_data = r'\\lb-srv\Luftbilder\luftbild\ni\flugzeug\2009\limker_strang_sge1\daten'
+#insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
+path_data = r'\\lb-srv\Luftbilder\luftbild\ni\flugzeug\2023\trochel_sgb2\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2009_limker_strang_dop_nlf_sge1'
+tile_name = 'ni_flugzeug_2023_trochel_dop_sgb2'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
@@ -61,7 +62,7 @@ folder_list = [cog_folder, vrt_folder, footprint_folder]
 for x in folder_list:
     create_folder(path_out,x)
 dir_cog = os.path.join(path_out,cog_folder)
-dir_vrt = os.path.join(path_out,vrt_folder)
+dir_vrt = os.path.join(os.path.dirname(path_data),vrt_folder)
 dir_footprint = os.path.join(path_out,footprint_folder)
 
 # create temporary vrt from raw data
@@ -121,12 +122,14 @@ if not in_srs in [str(out_srs)]:
         gdalwarpString = 'gdalwarp -of VRT -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + vrt_temp + ' ' + vrt_temp_proj
         subprocess.run(gdalwarpString)
         ogr2ogrString = 'ogr2ogr -f "GPKG" -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
-        subprocess.run(ogr2ogrString)  
+        subprocess.run(ogr2ogrString)
+        print("in_srs is NONE")  
     else:
         gdalwarpString = 'gdalwarp -of VRT -t_srs EPSG:' + str(out_srs) + ' ' + vrt_temp + ' ' + vrt_temp_proj
         subprocess.run(gdalwarpString)
         ogr2ogrString = 'ogr2ogr -f "GPKG" -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
-        subprocess.run(ogr2ogrString)  
+        subprocess.run(ogr2ogrString)
+        print("in_srs is "+in_srs)    
     warning =  '\n\n\n\n\n WARNHINWEIS! Ausgangsdaten haben kein Koordinatensystem zugewiesen, bitte nachprüfen, ob Daten vollständig und lagerichtig berechnet wurden! \n\n\n\n\n'
     vrt_temp = vrt_temp_proj
     inputdata_extent = inputdata_extent_proj
@@ -289,7 +292,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
 # create 2x2 km cog tiles from temporary vrt that was created from input data  
 if __name__ == '__main__':
     count = mp.cpu_count()
-    pool = mp.Pool(count-63)
+    pool = mp.Pool(count-3)
     args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres) for x in tiles]
     pool.starmap(tiling, args)
     pool.close()
@@ -308,22 +311,22 @@ if __name__ == '__main__':
             os.remove(x)
             os.remove(tif_path)
         else:
-            if 'path' not in df:
-                df.insert(1, 'path', tif_path)
+            if 'location' not in df:
+                df.insert(1, 'location', tif_path)
             tiles_valid.append(df)
     extent = os.path.join(dir_footprint, tile_name+'_extent.gpkg')
 
     # merge all tile outlines 
     df_merged = pandas.concat(tiles_valid)
-    df_merged['geometry'] = df_merged['geometry'].make_valid().buffer(xres, join_style = 2).buffer(-1*xres, join_style = 2)
-    df_merged = df_merged.dissolve(by='path')
+    df_merged['geometry'] = df_merged['geometry'].make_valid()
+    df_merged = df_merged.dissolve(by='location')
     df_merged.to_file(extent, layer='footprint_outline', driver="GPKG")
     # dissolve tile outlines to dataset outline
     df_outline = df_merged.dissolve(by='ID')
-    df_outline['geometry'] =df_outline['geometry'].make_valid().buffer(xres, join_style = 2).buffer(-1*xres, join_style = 2)
+    df_outline['geometry'] =df_outline['geometry'].make_valid()
     df_outline.to_file(extent, layer='outline', driver="GPKG")
     # get all 2x2 km tiles which contain data
-    gdalindex_string = 'gdaltindex -lyr_name footprints ' + extent + ' ' + os.path.join(dir_cog) + '/*.tif'
+    gdalindex_string = 'gdaltindex -tileindex location -lyr_name footprints ' + extent + ' ' + os.path.join(dir_cog) + '/*.tif'
     subprocess.run(gdalindex_string)
 
     # read metadaten files
@@ -344,9 +347,14 @@ if __name__ == '__main__':
                     value = y[1]
                     dataframe.insert(len(dataframe.columns), column, '') #add column to dataframe
                     dataframe[column] = value  #fill coulumn
-            index = dataframe.columns.get_loc('datum_bildflug_von')
+            index = dataframe.columns.get_loc('datum_bildflug_von') #get column position
             dataframe.insert(index, 'bildflug_jahr', '')  # add column to dataframe
             dataframe['bildflug_jahr'] = dataframe['datum_bildflug_von'].str.split('-')[0][0]  # fill coulumn
+            if table != 'outline':
+                index = dataframe.columns.get_loc('location')
+                dataframe.insert(index, 'path', '')  # add column to dataframe
+                dataframe['path'] = '/'.join(dataframe['location'].str.split('\\')[0][4:])  # fill coulumn
+                dataframe.drop(['location'],axis=1,inplace=True)
             dataframe.loc[dataframe['epsg']!= str(out_srs),'epsg'] = str(out_srs)
             if 'ID' in dataframe.columns:
                 dataframe.drop(['ID'],axis=1,inplace=True)
@@ -367,7 +375,7 @@ if __name__ == '__main__':
     with open(input_list_txt, 'w') as file:
         file.write(tif)
         file.close()
-    vrt = os.path.join(dir_vrt, vrt_name + '.vrt')
+    vrt = os.path.join(path_data, vrt_name + '.vrt')
     buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
     subprocess.run(buildvrtString)
 
@@ -425,18 +433,18 @@ if __name__ == '__main__':
     os.rename(vrt[:-4]+ '.tif',ovr_final)
 
     # remove temporary layers
-    vector_list = glob(os.path.join(dir_footprint, '*'))
-    for x in vector_list:
-        if x != extent:
-            os.remove(x)
+    # vector_list = glob(os.path.join(dir_footprint, '*'))
+    # for x in vector_list:
+    #     if x != extent:
+    #         os.remove(x)
 
-    delete_list = glob(os.path.join(dir_vrt, '*'))
-    for x in delete_list:
-        if not x in (vrt, ovr_final):
-            openfile = open(x)
-            openfile.close()
-            print(x)
-            os.remove(x)
+    # delete_list = glob(os.path.join(dir_vrt, '*'))
+    # for x in delete_list:
+    #     if not x in (vrt, ovr_final):
+    #         openfile = open(x)
+    #         openfile.close()
+    #         print(x)
+    #         os.remove(x)
 
 
     hours, rem = divmod(time.time() - start_time, 3600)
