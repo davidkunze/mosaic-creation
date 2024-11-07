@@ -318,8 +318,8 @@ if __name__ == '__main__':
 
     # merge all tile outlines 
     df_merged = pandas.concat(tiles_valid)
-    df_merged['geometry'] = df_merged['geometry'].make_valid()
-    df_merged = df_merged.dissolve(by='location')
+    df_merged['geometry'] = df_merged['geometry'].make_valid().buffer(xres, join_style = 2).buffer(-1*xres, join_style = 2)
+    df_merged = df_merged.dissolve(by='path')
     df_merged.to_file(extent, layer='footprint_outline', driver="GPKG")
     # dissolve tile outlines to dataset outline
     df_outline = df_merged.dissolve(by='ID')
