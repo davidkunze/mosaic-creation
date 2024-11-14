@@ -18,12 +18,12 @@ gdal.UseExceptions()
 start_time = time.time()
 
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-server\LB-Ortho\ni\lverm\orthos_stand_2023_04_05_06\daten'
+path_data = r'\\lb-server\LB-Ortho\ni\lverm\orthos_stand_2020_03_04_05_06\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2023_ni_dop_lverm'
+tile_name = 'ni_flugzeug_2020_ni_dop_lverm'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
@@ -62,7 +62,7 @@ folder_list = [cog_folder, vrt_folder, footprint_folder]
 for x in folder_list:
     create_folder(path_out,x)
 dir_cog = os.path.join(path_out,cog_folder)
-dir_vrt = os.path.join(os.path.dirname(path_data),vrt_folder)
+dir_vrt = os.path.join(path_data,vrt_folder)
 dir_footprint = os.path.join(path_out,footprint_folder)
 
 # create temporary vrt from raw data
@@ -70,7 +70,7 @@ vrt_temp = os.path.join(dir_vrt, 'temp.vrt')
 input_data_str = '\n'.join(input_data)
 input_list_txt = os.path.join(dir_vrt, 'input_list.txt')
 with open(input_list_txt, 'w') as file:
-    # file.write(input_data_str)
+    file.write(input_data_str)
     file.close()
 buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt_temp
 subprocess.run(buildvrtString)
