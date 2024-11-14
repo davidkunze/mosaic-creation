@@ -18,12 +18,12 @@ gdal.UseExceptions()
 start_time = time.time()
 
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-srv\Luftbilder\luftbild\ni\flugzeug\2023\trochel_sgb2\daten'
+path_data = r'\\lb-server\LB-Ortho\ni\lverm\orthos_stand_2023_04_05_06\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2023_trochel_dop_sgb2'
+tile_name = 'ni_flugzeug_2023_ni_dop_lverm'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
@@ -70,7 +70,7 @@ vrt_temp = os.path.join(dir_vrt, 'temp.vrt')
 input_data_str = '\n'.join(input_data)
 input_list_txt = os.path.join(dir_vrt, 'input_list.txt')
 with open(input_list_txt, 'w') as file:
-    file.write(input_data_str)
+    # file.write(input_data_str)
     file.close()
 buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt_temp
 subprocess.run(buildvrtString)
@@ -432,19 +432,19 @@ if __name__ == '__main__':
     ovr_final = vrt[:-4]+'.vrt.ovr'
     os.rename(vrt[:-4]+ '.tif',ovr_final)
 
-    # remove temporary layers
-    # vector_list = glob(os.path.join(dir_footprint, '*'))
-    # for x in vector_list:
-    #     if x != extent:
-    #         os.remove(x)
+    #remove temporary layers
+    vector_list = glob(os.path.join(dir_footprint, '*'))
+    for x in vector_list:
+        if x != extent:
+            os.remove(x)
 
-    # delete_list = glob(os.path.join(dir_vrt, '*'))
-    # for x in delete_list:
-    #     if not x in (vrt, ovr_final):
-    #         openfile = open(x)
-    #         openfile.close()
-    #         print(x)
-    #         os.remove(x)
+    delete_list = glob(os.path.join(dir_vrt, '*'))
+    for x in delete_list:
+        if not x in (vrt, ovr_final):
+            openfile = open(x)
+            openfile.close()
+            print(x)
+            os.remove(x)
 
 
     hours, rem = divmod(time.time() - start_time, 3600)
