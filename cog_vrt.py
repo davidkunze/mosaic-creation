@@ -29,7 +29,7 @@ tile_name = 'ni_flugzeug_2020_ni_dop_lverm'
 
 vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
-nodata_value = '' 
+nodata_value = '0' 
 
 in_srs_specified = 25832 #in some cases, the coordinate system does not apper GDAL-readable, in such cases, specify coordinate system 
 out_srs = 25832 #EPSG-code of output projection
@@ -38,20 +38,6 @@ path_meta = os.path.join(os.path.dirname(path_data),"doku")
 cog_folder = 'kacheln'
 vrt_folder = 'vrt'
 footprint_folder = 'kacheluebersicht'
-
-
-#get all files from dictionary and subdictionary
-formats = ('*.tif','*.jgp','*.png','*.img')
-path_data = pathlib.Path(path_data)
-input_windows_path = []
-for x in formats:
-    input_windows_path.extend(path_data.rglob(x))
-#transform windows path to string
-input_data = []
-for x in input_windows_path:
-    input_data.append(str(x))
-
-# print(input_data)
 
 #create subfolder
 def create_folder(output_f, folder_name):
@@ -64,6 +50,20 @@ for x in folder_list:
 dir_cog = os.path.join(path_out,cog_folder)
 dir_vrt = os.path.join(path_data,vrt_folder)
 dir_footprint = os.path.join(path_out,footprint_folder)
+
+
+#get all files from dictionary and subdictionary
+formats = ('*.tif','*.jgp','*.png','*.img')
+path_data = pathlib.Path(path_data)
+input_windows_path = []
+for x in formats:
+    input_windows_path.extend(path_data.rglob(x))
+#transform windows path to string
+input_data = []
+for x in input_windows_path:
+    if cog_folder not in os.path.dirname(x): #prevents calculated tiles from being used as input data
+        input_data.append(str(x))
+
 
 # create temporary vrt from raw data
 vrt_temp = os.path.join(dir_vrt, 'temp.vrt')
@@ -280,8 +280,9 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
     else:
         comp = 'DEFLATE'
     
-    gdaltranString = 'gdal_translate -q -of COG -co COMPRESS=DEFLATE -co PREDICTOR=2 -r '+resamp_method+' -a_srs EPSG:' + str(out_srs) + ' ' + bands + ' -tr ' + str(x_res) + ' ' + str(y_res) + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output
-    subprocess.run(gdaltranString)
+    if not os.path.isfile(output): #calculate file just if it exists
+        gdaltranString = 'gdal_translate -q -of COG -co COMPRESS=DEFLATE -co PREDICTOR=2 -r '+resamp_method+' -a_srs EPSG:' + str(out_srs) + ' ' + bands + ' -tr ' + str(x_res) + ' ' + str(y_res) + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output
+        subprocess.run(gdaltranString)
     # create polygon from data extent
     footprint = os.path.join(dir_footprint, output_name + ".gpkg")
     gdalvectorString = 'gdal_contour -q -fl 1 -b 1 -f "GPKG" -p ' + output + ' ' + footprint
@@ -318,8 +319,7 @@ if __name__ == '__main__':
 
     # merge all tile outlines 
     df_merged = pandas.concat(tiles_valid)
-    df_merged['geometry'] = df_merged['geometry'].make_valid().buffer(xres, join_style = 2).buffer(-1*xres, join_style = 2)
-    df_merged = df_merged.dissolve(by='path')
+    df_merged['geometry'] = df_merged['geometry'].make_valid()
     df_merged.to_file(extent, layer='footprint_outline', driver="GPKG")
     # dissolve tile outlines to dataset outline
     df_outline = df_merged.dissolve(by='ID')
@@ -420,9 +420,9 @@ if __name__ == '__main__':
         new_name =  x_split[0]+'2.tif'+x_split[1]
         os.rename(x, new_name)
         ovr_tif.append(new_name)
-        # os.rename(new_name, x)
 
     ovr = ovr_tif[0]
+    
     ds = gdal.Open(ovr)
     ds.SetProjection('EPSG:'+str(out_srs))
     ds.SetGeoTransform([ulx, level[0]*xres, 0, uly, 0, level[0]*yres])
@@ -431,6 +431,9 @@ if __name__ == '__main__':
     subprocess.run(gdaltransString)
     ovr_final = vrt[:-4]+'.vrt.ovr'
     os.rename(vrt[:-4]+ '.tif',ovr_final)
+    for x in ovr_tif:
+        os.remove(x)
+    os.remove(ovr+'.aux.xml')
 
     #remove temporary layers
     vector_list = glob(os.path.join(dir_footprint, '*'))
@@ -445,7 +448,7 @@ if __name__ == '__main__':
             openfile.close()
             print(x)
             os.remove(x)
-
+    os.removedirs(dir_vrt)
 
     hours, rem = divmod(time.time() - start_time, 3600)
     minutes, seconds = divmod(rem, 60)
