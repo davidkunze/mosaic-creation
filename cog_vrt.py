@@ -280,9 +280,9 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
     else:
         comp = 'DEFLATE'
     
-    if not os.path.isfile(output): #calculate file just if it exists
-        gdaltranString = 'gdal_translate -q -of COG -co COMPRESS=DEFLATE -co PREDICTOR=2 -r '+resamp_method+' -a_srs EPSG:' + str(out_srs) + ' ' + bands + ' -tr ' + str(x_res) + ' ' + str(y_res) + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output
-        subprocess.run(gdaltranString)
+    # if not os.path.isfile(output): #calculate file just if it exists
+    #     gdaltranString = 'gdal_translate -q -of COG -co COMPRESS=DEFLATE -co PREDICTOR=2 -r '+resamp_method+' -a_srs EPSG:' + str(out_srs) + ' ' + bands + ' -tr ' + str(x_res) + ' ' + str(y_res) + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output
+    #     subprocess.run(gdaltranString)
     # create polygon from data extent
     footprint = os.path.join(dir_footprint, output_name + ".gpkg")
     gdalvectorString = 'gdal_contour -q -fl 1 -b 1 -f "GPKG" -p ' + output + ' ' + footprint
@@ -323,6 +323,7 @@ if __name__ == '__main__':
     df_merged.to_file(extent, layer='footprint_outline', driver="GPKG")
     # dissolve tile outlines to dataset outline
     df_outline = df_merged.dissolve(by='ID')
+    df_outline.drop(['location'],axis=1,inplace=True)
     df_outline['geometry'] =df_outline['geometry'].make_valid()
     df_outline.to_file(extent, layer='outline', driver="GPKG")
     # get all 2x2 km tiles which contain data
@@ -353,7 +354,8 @@ if __name__ == '__main__':
             if table != 'outline':
                 index = dataframe.columns.get_loc('location')
                 dataframe.insert(index, 'path', '')  # add column to dataframe
-                dataframe['path'] = '/'.join(dataframe['location'].str.split('\\')[0][4:])  # fill coulumn
+                # dataframe['path'] = '/'.join(dataframe['location'].str.split('\\')[4:])  # fill coulumn
+                dataframe['path'] = dataframe.apply(lambda row: '/'.join(row.location.split('\\')[4:]), axis = 1)
                 dataframe.drop(['location'],axis=1,inplace=True)
             dataframe.loc[dataframe['epsg']!= str(out_srs),'epsg'] = str(out_srs)
             if 'ID' in dataframe.columns:
@@ -375,7 +377,7 @@ if __name__ == '__main__':
     with open(input_list_txt, 'w') as file:
         file.write(tif)
         file.close()
-    vrt = os.path.join(path_data, vrt_name + '.vrt')
+    vrt = os.path.join(os.path.dirname(path_data), vrt_name + '.vrt')
     buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
     subprocess.run(buildvrtString)
 
