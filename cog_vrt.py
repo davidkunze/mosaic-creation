@@ -284,8 +284,8 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
         gdaltranString = 'gdal_translate -q -of COG -co COMPRESS=DEFLATE -co PREDICTOR=2 -r '+resamp_method+' -a_srs EPSG:' + str(out_srs) + ' ' + bands + ' -tr ' + str(x_res) + ' ' + str(y_res) + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output
         subprocess.run(gdaltranString)
     # create polygon from data extent
+    footprint = os.path.join(dir_footprint, output_name + ".gpkg")
     if not os.path.isfile(footprint): #calculate file just if it exists
-        footprint = os.path.join(dir_footprint, output_name + ".gpkg")
         gdalvectorString = 'gdal_contour -q -fl 1 -b 1 -f "GPKG" -p ' + output + ' ' + footprint
         subprocess.run(gdalvectorString)
 
