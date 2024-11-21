@@ -32,7 +32,10 @@
 
 9. Intersect tiles with the dissolved extent of input tiles (6.) ⟶ Remove the tiles that do not intersect
 ![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/39004eb5-c5be-4fe3-9532-9247cb943f56)  
-![grafik](https://github.com/davidkunze/mosaic-creation/assets/133227408/aff56290-7e9c-4f33-90f6-f29de39e76f9)
+![grafik](https://github.com/user-attachments/assets/efffc543-c0cf-4692-b450-2c897b2eff4c)
+
+
+
 
 11. Create COG tiles
 12. Metadata vector files
