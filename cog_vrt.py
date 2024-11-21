@@ -377,7 +377,7 @@ if __name__ == '__main__':
     with open(input_list_txt, 'w') as file:
         file.write(tif)
         file.close()
-    vrt = os.path.join(os.path.dirname(path_data), vrt_name + '.vrt')
+    vrt = os.path.join(path_data, vrt_name + '.vrt')
     buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
     subprocess.run(buildvrtString)
 
