@@ -20,11 +20,11 @@ start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
 path_data = r'\\lb-server\LB-Ortho\ni\lverm\orthos_stand_2020_03_04_05_06\daten'
 path_out = path_data
-# naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber_x-wert_y-wert
+# naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2020_ni_dop_lverm'
-# naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber
+tile_name = 'ni_flugzeug_2020_ni_lverm_dop'
+# naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
 vrt_name = tile_name
@@ -355,8 +355,7 @@ if __name__ == '__main__':
             if table != 'outline':
                 index = dataframe.columns.get_loc('location')
                 dataframe.insert(index, 'path', '')  # add column to dataframe
-                # dataframe['path'] = '/'.join(dataframe['location'].str.split('\\')[4:])  # fill coulumn
-                dataframe['path'] = dataframe.apply(lambda row: '/'.join(row.location.split('\\')[4:]), axis = 1)
+                dataframe['path'] = dataframe.apply(lambda row: '/'.join(row.location.split('\\')[5:]), axis = 1)
                 dataframe.drop(['location'],axis=1,inplace=True)
             dataframe.loc[dataframe['epsg']!= str(out_srs),'epsg'] = str(out_srs)
             if 'ID' in dataframe.columns:
