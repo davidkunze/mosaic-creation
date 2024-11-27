@@ -1,8 +1,9 @@
 **Orthos**
-- relative path in vrt  --> https://gis.stackexchange.com/questions/155237/where-vrt-files-store-the-location-of-the-tiles
-- Kachel-geopackage: relative statt absolute pfade in Attributtabelle
+- "path" spalte in kachelübersichtslayer "outline" mit vrt pfad füllen
 - overviews --> bei mehr als 5 bänder nur übersichten der ersten 5 bänder berechnen
 - COG-Berechnung sehr arbeitsspeicherintensiv --> for start einer neuen Kachel, Test, ob ausreichend Arbeitsspeicher zur Verfügung steht
+- - ~~relative path in vrt  --> https://gis.stackexchange.com/questions/155237/where-vrt-files-store-the-location-of-the-tiles~~
+- ~~Kachel-geopackage: relative statt absolute pfade in Attributtabelle~~
 - ~~Kachelgröße geteilt durch Pixelgröße ergibt ungerade Zahl (z.B. 2000 m /0,07 m = 28571,43)~~
   - ~~resamplingmethode muss angepasst werden --> nearest neighbour funktioniert nicht, da ungerade Zeile wegelassen wird und somit Leerzeilen/-spalten entstehen~~
   - ~~Y:\David\vrt_cog\resampling_methods~~
