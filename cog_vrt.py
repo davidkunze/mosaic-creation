@@ -10,20 +10,18 @@ import geopandas
 import pandas
 import numpy
 import subprocess
-# import rasterio
-# import rioxarray as rxr
 from osgeo import gdal, osr, ogr
 gdal.UseExceptions()
 
 start_time = time.time()
 
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'Y:\David\vrt_cog\testdaten\lohbergen\daten'
+path_data = r'\\lb-server\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2021\ni_lverm\tdop\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2012_lohbergen_sgb4_tdop'
+tile_name = 'ni_flugzeug_2021_ni_lverm_tdop'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
@@ -53,7 +51,7 @@ dir_footprint = os.path.join(path_out,footprint_folder)
 
 
 #get all files from dictionary and subdictionary
-formats = ('*.tif','*.jgp','*.png','*.img')
+formats = ['*.tif','*.jgp','*.png','*.img']
 path_data = pathlib.Path(path_data)
 input_windows_path = []
 for x in formats:
@@ -416,9 +414,8 @@ if __name__ == '__main__':
         file.write(tif)
         file.close()
     vrt = os.path.join(path_data, vrt_name + '.vrt')
-    buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
+    buildvrtString = 'gdalbuildvrt -srcnodata "' + ' '.join(nodata_list) + '" -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
     subprocess.run(buildvrtString)
-
 
 
     # # create vrt overviews
