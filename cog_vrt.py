@@ -5,7 +5,7 @@ import pathlib
 import multiprocessing as mp
 import time
 import fiona
-from shapely.geometry import Point, LineString, Polygon
+from shapely.geometry import Point, LineString, Polygon, MultiPolygon
 import geopandas
 import pandas
 import numpy
@@ -18,12 +18,12 @@ gdal.UseExceptions()
 start_time = time.time()
 
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-server\LB-Ortho\ni\lverm\orthos_stand_2020_03_04_05_06\daten'
+path_data = r'Y:\David\vrt_cog\testdaten\lohbergen\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2020_ni_lverm_dop'
+tile_name = 'ni_flugzeug_2012_lohbergen_sgb4_tdop'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
@@ -243,7 +243,34 @@ df_polygons.to_file(filename=os.path.join(dir_vrt,'polygon_select.gpkg'), driver
 print('all tiles: ' + str(len(tiles_all)))
 print('selected tiles: '+ str(len(tiles)))
 
- 
+# get_angle function
+def get_angles(vec_1, vec_2):
+    # Return the angle, in degrees, between two vectors
+    # Convert 2D vectors to 3D by adding a 0 in the third dimension
+    vec_1_3d = numpy.array([vec_1[0], vec_1[1], 0])
+    vec_2_3d = numpy.array([vec_2[0], vec_2[1], 0])
+    dot = numpy.dot(vec_1_3d, vec_2_3d)
+    det = numpy.cross(vec_1_3d, vec_2_3d)[2]  # Take the z-component of the cross product
+    angle_in_rad = numpy.arctan2(det, dot)
+    return numpy.degrees(angle_in_rad)
+
+# Function for removing superfluous corner points along a straight line that would require a large amount of memory space
+def simplify_by_angle(poly_in, deg_tol=1):
+    # poly_in: shapely Polygon
+    # deg_tol: degree tolerance for comparison between successive vectors
+    ext_poly_coords = poly_in.exterior.coords[:]
+    vector_rep = numpy.diff(ext_poly_coords, axis=0)
+    num_vectors = len(vector_rep)
+    angles_list = []
+    for i in range(0, num_vectors):
+        angles_list.append(numpy.abs(get_angles(vector_rep[i], vector_rep[(i + 1) % num_vectors])))
+    # get mask satisfying tolerance
+    thresh_vals_by_deg = numpy.where(numpy.array(angles_list) > deg_tol)
+    new_idx = list(thresh_vals_by_deg[0] + 1)
+    new_vertices = [ext_poly_coords[idx] for idx in new_idx]
+    return Polygon(new_vertices)
+
+
 def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
     i = 1
     bands = []
@@ -288,6 +315,17 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
     if not os.path.isfile(footprint): #calculate file just if it exists
         gdalvectorString = 'gdal_contour -q -fl 1 -b 1 -f "GPKG" -p ' + output + ' ' + footprint
         subprocess.run(gdalvectorString)
+        # Simplifying contour polygon to reduce number of vertices
+        gdf = geopandas.read_file(footprint, layer='contour')
+        simplified_geometries = []
+        # Apply the simplification function to each geometry in the GeoDataFrame
+        for geometry in gdf['geometry']:
+            # For MultiPolygon, simplify each individual Polygon in the MultiPolygon
+            simplified_multipolygon = MultiPolygon([simplify_by_angle(p) for p in geometry.geoms])
+            simplified_geometries.append(simplified_multipolygon)
+        gdf['geometry'] = simplified_geometries
+        # Save the modified geodata frame back to the file
+        gdf.to_file(footprint, layer='contour', driver="GPKG")
 
 
 # ###############
