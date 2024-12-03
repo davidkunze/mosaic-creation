@@ -16,12 +16,12 @@ gdal.UseExceptions()
 start_time = time.time()
 
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-server\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2021\ni_lverm\tdop\daten'
+path_data = r'Y:\David\vrt_cog\testdaten\lverm_ni_2020\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2021_ni_lverm_tdop'
+tile_name = 'ni_flugzeug_2020_ni_lverm_tdop'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
@@ -360,7 +360,7 @@ if __name__ == '__main__':
     df_merged.to_file(extent, layer='footprint_outline', driver="GPKG")
     # dissolve tile outlines to dataset outline
     df_outline = df_merged.dissolve(by='ID')
-    df_outline.drop(['location'],axis=1,inplace=True)
+    df_outline['location'] = os.path.join(path_data, vrt_name + '.vrt')
     df_outline['geometry'] =df_outline['geometry'].make_valid()
     df_outline.to_file(extent, layer='outline', driver="GPKG")
     # get all 2x2 km tiles which contain data
@@ -388,11 +388,11 @@ if __name__ == '__main__':
             index = dataframe.columns.get_loc('datum_bildflug_von') #get column position
             dataframe.insert(index, 'bildflug_jahr', '')  # add column to dataframe
             dataframe['bildflug_jahr'] = dataframe['datum_bildflug_von'].str.split('-')[0][0]  # fill coulumn
-            if table != 'outline':
-                index = dataframe.columns.get_loc('location')
-                dataframe.insert(index, 'path', '')  # add column to dataframe
-                dataframe['path'] = dataframe.apply(lambda row: '/'.join(row.location.split('\\')[5:]), axis = 1)
-                dataframe.drop(['location'],axis=1,inplace=True)
+            # if table != 'outline':
+            index = dataframe.columns.get_loc('location')
+            dataframe.insert(index, 'path', '')  # add column to dataframe
+            dataframe['path'] = dataframe.apply(lambda row: '/'.join(row.location.split('\\')[5:]), axis = 1)
+            dataframe.drop(['location'],axis=1,inplace=True)
             dataframe.loc[dataframe['epsg']!= str(out_srs),'epsg'] = str(out_srs)
             if 'ID' in dataframe.columns:
                 dataframe.drop(['ID'],axis=1,inplace=True)
