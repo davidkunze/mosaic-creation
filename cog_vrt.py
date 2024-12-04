@@ -70,7 +70,7 @@ input_list_txt = os.path.join(dir_vrt, 'input_list.txt')
 with open(input_list_txt, 'w') as file:
     file.write(input_data_str)
     file.close()
-buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt_temp
+buildvrtString = 'gdalbuildvrt -overwrite -allow_projection_difference -input_file_list '+ input_list_txt + ' ' + vrt_temp
 subprocess.run(buildvrtString)
 
 folder_list.append(os.path.basename(vrt_temp))
