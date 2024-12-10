@@ -22,7 +22,7 @@ path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2022_he_lverm_tdop'
+tile_name = 'he_flugzeug_2022_he_lverm_tdop'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
@@ -52,9 +52,9 @@ input_list_txt = os.path.join(dir_vrt, 'input_list.txt')
 with open(input_list_txt, 'w') as file:
     file.write(tif)
     file.close()
-vrt = os.path.join(dir_vrt, vrt_name + '.vrt')
+vrt = os.path.join(path_data, vrt_name + '.vrt')
 buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
-subprocess.run(buildvrtString)
+# subprocess.run(buildvrtString)
 
 level = [16, 2, 2, 2, 2, 2]
 ovr_list = []
@@ -63,17 +63,15 @@ for x in level:
     if x == level[0]:
         gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES --config OVERVIEW_COMPRESS ZSTD ' + vrt + ' ' + str(x)
         print(gdaladdoString)
-        subprocess.run(gdaladdoString)
+        # subprocess.run(gdaladdoString)
         OVERVIEW_FILE = vrt+'.ovr'
         ovr_list.append(OVERVIEW_FILE)
-        time_level = time.time()
     else:
         gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES --config OVERVIEW_COMPRESS ZSTD ' + OVERVIEW_FILE + ' ' + str(x)
         print(gdaladdoString)
-        subprocess.run(gdaladdoString)
+        # subprocess.run(gdaladdoString)
         OVERVIEW_FILE = OVERVIEW_FILE+'.ovr'
         ovr_list.append(OVERVIEW_FILE)
-        time_level = time.time()
 ovr_tif =[]
 
 for x in ovr_list:
@@ -81,7 +79,7 @@ for x in ovr_list:
     new_name =  x_split[0]+'2.tif'+x_split[1]
     os.rename(x, new_name)
     ovr_tif.append(new_name)
-    os.rename(new_name, x)
+    # os.rename(new_name, x)
 
 vrt_ds = gdal.Open(vrt)
 ulx, xres, xskew, uly, yskew, yres  = vrt_ds.GetGeoTransform()
