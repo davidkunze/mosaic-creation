@@ -414,7 +414,13 @@ if __name__ == '__main__':
         file.write(tif)
         file.close()
     vrt = os.path.join(path_data, vrt_name + '.vrt')
-    buildvrtString = 'gdalbuildvrt -srcnodata "' + ' '.join(nodata_list) + '" -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
+    try:
+        nodata_list #check if nodata list exists
+    except NameError:
+        buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
+    else:
+        # if nodata value is defined it will be used as source nodata
+        buildvrtString = 'gdalbuildvrt -srcnodata "' + ' '.join(nodata_list) + '" -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
     subprocess.run(buildvrtString)
 
 

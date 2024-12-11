@@ -96,4 +96,4 @@ os.rename(vrt[:-4]+ '.tif',ovr_final)
 
 for x in ovr_tif:
     os.remove(x)
-    os.remove(input_list_txt)
+os.remove(input_list_txt)
