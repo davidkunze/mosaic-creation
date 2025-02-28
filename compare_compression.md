@@ -18,7 +18,7 @@ Umcompressed images are tifs, compressed imags are Cloud Optimized Geotiff inclu
 |16|DEFLATE|2|9|34.95|7.88|958.324|
 
 
-code used for testing
+code used for creating files
 ```python 
 import os
 import time
@@ -44,4 +44,30 @@ subprocess.run(gdaltranString)
 hours, rem = divmod(time.time() - start_time, 3600)
 minutes, seconds = divmod(rem, 60)
 print("{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
+```
+code used for reading files
+```python 
+import os
+import time
+import pathlib
+from osgeo import gdal, osr, ogr
+import subprocess
+
+path_data = r"\\lb-server\LB-Z-Temp\David\vrt_cog\testdaten\compression"
+formats = ['*.tif']
+path_data = pathlib.Path(path_data)
+input_windows_path = []
+for x in formats:
+    input_windows_path.extend(path_data.rglob(x))
+#transform windows path to string
+input_data = []
+for x in input_windows_path:
+    input_data.append(str(x))
+
+for x in input_data:
+    start_time = time.time()
+    ds = gdal.Open(x).ReadAsArray()
+    hours, rem = divmod(time.time() - start_time, 3600)
+    minutes, seconds = divmod(rem, 60)
+    print(x+': '+"{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
 ```
