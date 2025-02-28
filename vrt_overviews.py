@@ -17,12 +17,12 @@ gdal.UseExceptions()
 
 start_time = time.time()
 
-path_data = r'\\lb-server\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2022\he_lverm\tdop\daten'
+path_data = r'\\lb-server\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2023\harz_np\dop\daten\kacheln'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'he_flugzeug_2022_he_lverm_tdop'
+tile_name = 'ni_flugzeug_2023_harz_np_nlf_dop'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
@@ -30,14 +30,18 @@ vrt_name = tile_name
 out_srs = 25832
 
 
-path_meta = os.path.join(os.path.dirname(path_data),"doku")
-cog_folder = 'kacheln'
-vrt_folder = 'vrt'
+# path_meta = os.path.join(os.path.dirname(path_data),"doku")
+cog_folder = path_data
 footprint_folder = 'kacheluebersicht'
 
-dir_cog = os.path.join(path_out,cog_folder)
-dir_vrt = os.path.join(path_out,vrt_folder)
+dir_cog = os.path.join(path_out, cog_folder)
+dir_vrt = os.path.dirname(path_data)
 dir_footprint = os.path.join(path_out,footprint_folder)
+
+def create_folder(output_f, folder_name):
+    if not os.path.isdir(os.path.join(output_f, folder_name)):
+        os.mkdir(os.path.join(output_f, folder_name))
+# create_folder(path_data, vrt_folder)
 
 #get all cog-tiles
 dir_cog = pathlib.Path(dir_cog)
@@ -52,9 +56,9 @@ input_list_txt = os.path.join(dir_vrt, 'input_list.txt')
 with open(input_list_txt, 'w') as file:
     file.write(tif)
     file.close()
-vrt = os.path.join(path_data, vrt_name + '.vrt')
+vrt = os.path.join(dir_vrt, vrt_name + '.vrt')
 buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
-# subprocess.run(buildvrtString)
+subprocess.run(buildvrtString)
 
 level = [16, 2, 2, 2, 2, 2]
 ovr_list = []
@@ -63,13 +67,13 @@ for x in level:
     if x == level[0]:
         gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES --config OVERVIEW_COMPRESS ZSTD ' + vrt + ' ' + str(x)
         print(gdaladdoString)
-        # subprocess.run(gdaladdoString)
+        subprocess.run(gdaladdoString)
         OVERVIEW_FILE = vrt+'.ovr'
         ovr_list.append(OVERVIEW_FILE)
     else:
         gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES --config OVERVIEW_COMPRESS ZSTD ' + OVERVIEW_FILE + ' ' + str(x)
         print(gdaladdoString)
-        # subprocess.run(gdaladdoString)
+        subprocess.run(gdaladdoString)
         OVERVIEW_FILE = OVERVIEW_FILE+'.ovr'
         ovr_list.append(OVERVIEW_FILE)
 ovr_tif =[]
