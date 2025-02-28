@@ -15,24 +15,24 @@ gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-server\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2020\bobenwald_sgb3\dop\daten'
+path_data = r'\\lb-server\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2023\harz_np\dop\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2020_bobenwald_sgb3_dop'
+tile_name = 'ni_flugzeug_2023_harz_np_dop'
 
 vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
 # if nodata-value is "nodata" use empty string ''
-nodata_value = '' 
+nodata_value = '255' 
 
 in_srs_specified = 25832 #in some cases, the coordinate system does not apper GDAL-readable, in such cases, specify coordinate system 
 out_srs = 25832 #EPSG-code of output projection
 
 path_meta = os.path.join(os.path.dirname(path_data),"doku")
 cog_folder = 'kacheln'
-vrt_folder = 'vrt'
+vrt_folder = 'temp'
 footprint_folder = 'kacheluebersicht'
 
 #create subfolder
@@ -309,7 +309,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
     # create polygon from data extent
     footprint = os.path.join(dir_footprint, output_name + ".gpkg")
     if not os.path.isfile(footprint): #calculate file just if it exists
-        gdalvectorString = 'gdal_contour -q -fl 1 -b 1 -f "GPKG" -p ' + output + ' ' + footprint
+        gdalvectorString = 'gdal_contour -q -fl 0 -b 1 -f "GPKG" -p ' + output + ' ' + footprint
         subprocess.run(gdalvectorString)
         # Simplifying contour polygon to reduce number of vertices
         gdf = geopandas.read_file(footprint, layer='contour')
