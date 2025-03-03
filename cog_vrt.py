@@ -15,7 +15,7 @@ gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-server\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2023\harz_np\dop\daten'
+path_data = r'\\lb-server\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2023\harz_np\dop\8bit_deflate\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
@@ -304,7 +304,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
         comp = 'DEFLATE'
     
     if not os.path.isfile(output): #calculate file just if it exists
-        gdaltranString = 'gdal_translate -q -of COG -co COMPRESS=DEFLATE -co PREDICTOR=2 -r '+resamp_method+' -a_srs EPSG:' + str(out_srs) + ' ' + bands + ' -tr ' + str(x_res) + ' ' + str(y_res) + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output
+        gdaltranString = 'gdal_translate -q -of COG -co COMPRESS='+comp+' -co PREDICTOR=2 -r '+resamp_method+' -a_srs EPSG:' + str(out_srs) + ' ' + bands + ' -tr ' + str(x_res) + ' ' + str(y_res) + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output
         subprocess.run(gdaltranString)
     # create polygon from data extent
     footprint = os.path.join(dir_footprint, output_name + ".gpkg")
@@ -328,7 +328,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
 # create 2x2 km cog tiles from temporary vrt that was created from input data  
 if __name__ == '__main__':
     count = mp.cpu_count()
-    pool = mp.Pool(count-3)
+    pool = mp.Pool(count-60)
     args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres) for x in tiles]
     pool.starmap(tiling, args)
     pool.close()
@@ -441,14 +441,14 @@ if __name__ == '__main__':
 
     for x in level:
         if x == level[0]:
-            gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES --config OVERVIEW_COMPRESS ZSTD ' + vrt + ' ' + str(x)
+            gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES --config OVERVIEW_COMPRESS ZSTD --config ZSTD_LEVEL_OVERVIEW=1 ' + vrt + ' ' + str(x)
             print(gdaladdoString)
             subprocess.run(gdaladdoString)
             OVERVIEW_FILE = vrt+'.ovr'
             ovr_list.append(OVERVIEW_FILE)
             time_level = time.time()
         else:
-            gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES --config OVERVIEW_COMPRESS ZSTD ' + OVERVIEW_FILE + ' ' + str(x)
+            gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES --config OVERVIEW_COMPRESS ZSTD --config ZSTD_LEVEL_OVERVIEW=1 ' + OVERVIEW_FILE + ' ' + str(x)
             print(gdaladdoString)
             subprocess.run(gdaladdoString)
             OVERVIEW_FILE = OVERVIEW_FILE+'.ovr'
