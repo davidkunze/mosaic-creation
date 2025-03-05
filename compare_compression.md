@@ -86,11 +86,17 @@ output_md = "results.md"  # Markdown output file
 
 # Compression methods with predictors, lossless type, and compression levels
 compression_methods = {
-    "LZW": ([1, 2, 3], "Lossless", [None]),  # No compression level support
-    "DEFLATE": ([1, 2, 3], "Lossless", [1, 9]),  # Level 1 (fastest), 9 (best compression)
-    "ZSTD": ([1, 2, 3], "Lossless", [1, 9, 22]),  # Level 1 (fastest), 9 (high), 22 (max compression)
+    "LZW": ([1, 2, 3], "Lossless", [None]),  # No compression level support (N/A)
+    "DEFLATE": ([1, 2, 3], "Lossless", [1, 6, 9]),  # Level 1 (fastest), 6 (default), 9 (max compression)
+    "ZSTD": ([1, 2, 3], "Lossless", [1, 9, 22]),  # Level 1 (fastest), 9 (default), 22 (max compression)
     "JPEG": ([None], "Lossy", [100, 10]),  # Quality 100 (best), 10 (worst)
-    "PACKBITS": ([None], "Lossless", [None]),  # No compression level support
+    "PACKBITS": ([None], "Lossless", [None]),  # No compression level support (N/A)
+}
+
+# Default compression levels for reference in the table
+default_levels = {
+    "DEFLATE": 6,  # GDAL default for DEFLATE
+    "ZSTD": 9,  # GDAL default for ZSTD
 }
 
 # Create output directory if it doesn't exist
@@ -149,6 +155,16 @@ results = [("Original", "N/A", "N/A", "N/A", original_size, "N/A", original_read
 for compression, (predictors, lossless, levels) in compression_methods.items():
     for predictor in predictors:
         for level in levels:
+            # Determine if a compression level is available
+            if level is None and compression not in default_levels:
+                level_str = "N/A"
+            elif level is None:
+                level_str = "Default"
+            elif default_levels.get(compression) == level:
+                level_str = f"{level} (Default)"
+            else:
+                level_str = str(level)
+
             # Construct output filename
             output_filename = f"compressed_{compression}"
             if predictor:
@@ -169,15 +185,16 @@ for compression, (predictors, lossless, levels) in compression_methods.items():
             file_size = get_file_size(output_file)
 
             # Store results
-            results.append((compression, predictor if predictor else "N/A", level if level is not None else "Default", lossless, file_size, write_time, read_time))
+            results.append((compression, predictor if predictor else "N/A", level_str, lossless, file_size, write_time, read_time))
 
 # Write results to Markdown file
 with open(output_md, "w") as md_file:
     md_file.write("# Compression Performance Comparison\n\n")
-    md_file.write("| Method   | Predictor | Level  | Type     | Size (MB) | Write Time (s) | Read Time (s) |\n")
-    md_file.write("|----------|-----------|--------|----------|----------|----------------|---------------|\n")
+    md_file.write("| Method   | Predictor | Level         | Type     | Size (MB) | Write Time (s) | Read Time (s) |\n")
+    md_file.write("|----------|-----------|--------------|----------|----------|----------------|---------------|\n")
     for comp, pred, level, lossless, size, write_t, read_t in results:
-        md_file.write(f"| {comp:<8} | {pred:<9} | {level:<6} | {lossless:<8} | {size:<8.2f} | {write_t:<14.4f} | {read_t:<13.4f} |\n")
+        md_file.write(f"| {comp:<8} | {pred:<9} | {level:<12} | {lossless:<8} | {size:<8.2f} | {write_t:<14.4f} | {read_t:<13.4f} |\n")
 
 print(f"\nResults saved to {output_md}")
+
 ```
