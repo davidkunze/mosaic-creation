@@ -72,6 +72,44 @@ for x in input_data:
     print(x+': '+"{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
 ```
 
+# Compression Performance Comparison
+
+| Input File | Method   | Predictor | Level         | Type     | Size (MB) | Write Time (s) | Read Time (s) |
+|------------|----------|-----------|--------------|----------|----------|----------------|---------------|
+| 547000_5725000.tif | uncompressed | N/A       | N/A          | N/A      | 1560.35  | N/A            | 6.601         |
+| 547000_5725000.tif | LZW      | 1         | N/A          | Lossless | 1094.56  | 14.34          | 5.415         |
+| 547000_5725000.tif | LZW      | 2         | N/A          | Lossless | 569.08   | 15.98          | 5.044         |
+| 547000_5725000.tif | DEFLATE  | 1         | 1            | Lossless | 891.47   | 11.3           | 2.883         |
+| 547000_5725000.tif | DEFLATE  | 1         | 6 (Default)  | Lossless | 846.27   | 16.57          | 3.235         |
+| 547000_5725000.tif | DEFLATE  | 1         | 9            | Lossless | 839.33   | 43.68          | 3.237         |
+| 547000_5725000.tif | DEFLATE  | 2         | 1            | Lossless | 539.42   | 9.453          | 3.021         |
+| 547000_5725000.tif | DEFLATE  | 2         | 6 (Default)  | Lossless | 525.70   | 29.23          | 3.026         |
+| 547000_5725000.tif | DEFLATE  | 2         | 9            | Lossless | 504.88   | 100.8          | 3.06          |
+| 547000_5725000.tif | ZSTD     | 1         | 1            | Lossless | 913.23   | 17.87          | 1.989         |
+| 547000_5725000.tif | ZSTD     | 1         | 9 (Default)  | Lossless | 913.23   | 18.18          | 2.006         |
+| 547000_5725000.tif | ZSTD     | 1         | 22           | Lossless | 913.23   | 17.82          | 1.99          |
+| 547000_5725000.tif | ZSTD     | 2         | 1            | Lossless | 541.00   | 27.12          | 2.917         |
+| 547000_5725000.tif | ZSTD     | 2         | 9 (Default)  | Lossless | 541.00   | 27.01          | 2.804         |
+| 547000_5725000.tif | ZSTD     | 2         | 22           | Lossless | 541.00   | 26.94          | 2.813         |
+| 547000_5725000.tif | PACKBITS | N/A       | N/A          | Lossless | 1048.03  | 6.018          | 1.302         |
+| TOM_RGBI16_471000_5958000.tif | uncompressed | N/A       | N/A          | N/A      | 200.03   | N/A            | 1.144         |
+| TOM_RGBI16_471000_5958000.tif | LZW      | 1         | N/A          | Lossless | 247.81   | 2.606          | 0.9336        |
+| TOM_RGBI16_471000_5958000.tif | LZW      | 2         | N/A          | Lossless | 219.92   | 3.019          | 1.068         |
+| TOM_RGBI16_471000_5958000.tif | DEFLATE  | 1         | 1            | Lossless | 184.32   | 1.997          | 0.5363        |
+| TOM_RGBI16_471000_5958000.tif | DEFLATE  | 1         | 6 (Default)  | Lossless | 181.81   | 2.537          | 0.5828        |
+| TOM_RGBI16_471000_5958000.tif | DEFLATE  | 1         | 9            | Lossless | 181.38   | 4.937          | 0.5674        |
+| TOM_RGBI16_471000_5958000.tif | DEFLATE  | 2         | 1            | Lossless | 165.28   | 1.963          | 0.5999        |
+| TOM_RGBI16_471000_5958000.tif | DEFLATE  | 2         | 6 (Default)  | Lossless | 166.30   | 2.758          | 0.6691        |
+| TOM_RGBI16_471000_5958000.tif | DEFLATE  | 2         | 9            | Lossless | 165.33   | 5.671          | 0.6192        |
+| TOM_RGBI16_471000_5958000.tif | ZSTD     | 1         | 1            | Lossless | 184.43   | 0.978          | 0.3772        |
+| TOM_RGBI16_471000_5958000.tif | ZSTD     | 1         | 9 (Default)  | Lossless | 184.43   | 0.9866         | 0.3827        |
+| TOM_RGBI16_471000_5958000.tif | ZSTD     | 1         | 22           | Lossless | 184.43   | 0.9767         | 0.3895        |
+| TOM_RGBI16_471000_5958000.tif | ZSTD     | 2         | 1            | Lossless | 165.34   | 1.181          | 0.4477        |
+| TOM_RGBI16_471000_5958000.tif | ZSTD     | 2         | 9 (Default)  | Lossless | 165.34   | 1.049          | 0.4509        |
+| TOM_RGBI16_471000_5958000.tif | ZSTD     | 2         | 22           | Lossless | 165.34   | 1.049          | 0.4454        |
+| TOM_RGBI16_471000_5958000.tif | PACKBITS | N/A       | N/A          | Lossless | 192.26   | 1.126          | 0.1859        |
+
+
 code created by chatgpt; needs to be tested and check
 ```python
 import os
