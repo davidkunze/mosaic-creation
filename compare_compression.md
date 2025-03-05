@@ -73,7 +73,7 @@ for x in input_data:
 ```
 
 code created by chatgpt; needs to be tested and check
-'''python
+```python
 import os
 import time
 import subprocess
@@ -180,4 +180,4 @@ with open(output_md, "w") as md_file:
         md_file.write(f"| {comp:<8} | {pred:<9} | {level:<6} | {lossless:<8} | {size:<8.2f} | {write_t:<14.4f} | {read_t:<13.4f} |\n")
 
 print(f"\nResults saved to {output_md}")
-'''
+```
