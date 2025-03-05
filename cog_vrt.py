@@ -15,7 +15,7 @@ gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-server\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2023\harz_np\dop\8bit_deflate\daten'
+path_data = r'\\lb-server\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2023\harz_np\dop\8bit_deflate'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
@@ -445,22 +445,14 @@ if __name__ == '__main__':
 
     for x in level:
         if x == level[0]:
-<<<<<<< HEAD
             gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES ' + vrt + ' ' + str(x)
-=======
-            gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES --config OVERVIEW_COMPRESS ZSTD --config ZSTD_LEVEL_OVERVIEW=1 ' + vrt + ' ' + str(x)
->>>>>>> 7ee2105d12473a41b3f7c6a6702b70b13cd21503
             print(gdaladdoString)
             subprocess.run(gdaladdoString)
             OVERVIEW_FILE = vrt+'.ovr'
             ovr_list.append(OVERVIEW_FILE)
             time_level = time.time()
         else:
-<<<<<<< HEAD
             gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES ' + OVERVIEW_FILE + ' ' + str(x)
-=======
-            gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES --config OVERVIEW_COMPRESS ZSTD --config ZSTD_LEVEL_OVERVIEW=1 ' + OVERVIEW_FILE + ' ' + str(x)
->>>>>>> 7ee2105d12473a41b3f7c6a6702b70b13cd21503
             print(gdaladdoString)
             subprocess.run(gdaladdoString)
             OVERVIEW_FILE = OVERVIEW_FILE+'.ovr'
