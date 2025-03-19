@@ -1,30 +1,27 @@
-# Compression Performance Comparison
-
 | Input File | Method | Predictor | Format | Type | Size (MB) | Write Time (s) | Read Time (s) |
 |------------|--------|-----------|--------|------|----------|--------------|--------------|
-| 616000_5740000_16bit.tif | uncompressed | N/A | GTiff | Lossless | 800.00 | - | 3.78 |
-| 616000_5740000_16bit.tif | uncompressed | N/A | COG | Lossless | 1369.08 | 19.62 | 3.74 |
-| 616000_5740000_16bit.tif | LZW | 2 | COG | Lossless | 1296.76 | 23.96 | 4.30 |
-| 616000_5740000_16bit.tif | DEFLATE | 2 | COG | Lossless | 935.78 | 22.53 | 2.78 |
-| 616000_5740000_16bit.tif | ZSTD | 2 | COG | Lossless | 934.86 | 16.19 | 2.11 |
-| 616000_5740000_16bit.tif | PACKBITS | N/A | COG | Lossless | 1025.75 | 12.66 | 1.18 |
-| 616000_5740000_16bit.tif | LERC | N/A | COG | Lossless | 950.67 | 15.11 | 2.66 |
-| 616000_5740000_16bit.tif | LERC_DEFLATE | N/A | COG | Lossless | 946.69 | 26.65 | 3.77 |
-| 616000_5740000_16bit.tif | LERC_ZSTD | N/A | COG | Lossless | 950.28 | 19.34 | 2.57 |
-| 616000_5740000_16bit.tif | JPEG2000 | N/A | COG | Lossless | 1078.01 | 9.94 | 1.01 |
-| 616000_5740000_16bit.tif | LZMA | N/A | COG | Lossless | 974.26 | 212.08 | 36.37 |
-| 616000_5740000_8bit.tif | uncompressed | N/A | GTiff | Lossless | 400.01 | - | 1.74 |
-| 616000_5740000_8bit.tif | uncompressed | N/A | COG | Lossless | 576.26 | 11.71 | 2.15 |
-| 616000_5740000_8bit.tif | LZW | 2 | COG | Lossless | 383.92 | 11.93 | 1.99 |
-| 616000_5740000_8bit.tif | DEFLATE | 2 | COG | Lossless | 327.03 | 14.67 | 1.38 |
-| 616000_5740000_8bit.tif | ZSTD | 2 | COG | Lossless | 326.47 | 20.59 | 1.13 |
-| 616000_5740000_8bit.tif | PACKBITS | N/A | COG | Lossless | 512.88 | 7.76 | 0.37 |
-| 616000_5740000_8bit.tif | LERC | N/A | COG | Lossless | 358.97 | 11.68 | 2.44 |
-| 616000_5740000_8bit.tif | LERC_DEFLATE | N/A | COG | Lossless | 356.27 | 16.06 | 2.69 |
-| 616000_5740000_8bit.tif | LERC_ZSTD | N/A | COG | Lossless | 356.88 | 14.86 | 2.35 |
-| 616000_5740000_8bit.tif | JPEG2000 | N/A | COG | Lossless | 539.01 | 6.47 | 0.43 |
-| 616000_5740000_8bit.tif | LZMA | N/A | COG | Lossless | 354.05 | 114.08 | 15.31 |
-
+| 616000_5740000_16bit.tif | uncompressed | N/A | GTiff | Lossless | 800.00 | - | 3.83 |
+| 616000_5740000_16bit.tif | uncompressed | N/A | COG | Lossless | 1369.08 | 20.78 | 3.79 |
+| 616000_5740000_16bit.tif | LZW | 2 | COG | Lossless | 1296.76 | 25.48 | 4.31 |
+| 616000_5740000_16bit.tif | DEFLATE | 2 | COG | Lossless | 935.78 | 23.75 | 2.76 |
+| 616000_5740000_16bit.tif | ZSTD | 2 | COG | Lossless | 934.86 | 17.06 | 2.36 |
+| 616000_5740000_16bit.tif | PACKBITS | N/A | COG | Lossless | 1025.75 | 13.39 | 0.89 |
+| 616000_5740000_16bit.tif | LERC | N/A | COG | Lossless with -co QUALITY=100 | 950.67 | 15.95 | 2.67 |
+| 616000_5740000_16bit.tif | LERC_DEFLATE | N/A | COG | Lossless with -co QUALITY=100 | 946.69 | 26.95 | 3.78 |
+| 616000_5740000_16bit.tif | LERC_ZSTD | N/A | COG | Lossless with -co QUALITY=100 | 950.28 | 19.43 | 2.57 |
+| 616000_5740000_16bit.tif | JPEG2000 | N/A | COG | Lossless with -co QUALITY=100 | 1078.01 | 10.22 | 0.90 |
+| 616000_5740000_16bit.tif | LZMA | N/A | COG | Lossless | 974.26 | 211.45 | 36.65 |
+| 616000_5740000_8bit.tif | uncompressed | N/A | GTiff | Lossless | 400.01 | - | 1.76 |
+| 616000_5740000_8bit.tif | uncompressed | N/A | COG | Lossless | 578.36 | 9.10 | 2.22 |
+| 616000_5740000_8bit.tif | LZW | 2 | COG | Lossless | 393.53 | 8.45 | 2.10 |
+| 616000_5740000_8bit.tif | DEFLATE | 2 | COG | Lossless | 333.17 | 11.25 | 1.46 |
+| 616000_5740000_8bit.tif | ZSTD | 2 | COG | Lossless | 333.44 | 17.18 | 1.38 |
+| 616000_5740000_8bit.tif | PACKBITS | N/A | COG | Lossless | 512.50 | 4.38 | 0.39 |
+| 616000_5740000_8bit.tif | LERC | N/A | COG | Lossless with -co QUALITY=100 | 365.49 | 8.16 | 2.39 |
+| 616000_5740000_8bit.tif | LERC_DEFLATE | N/A | COG | Lossless with -co QUALITY=100 | 362.81 | 12.48 | 2.71 |
+| 616000_5740000_8bit.tif | LERC_ZSTD | N/A | COG | Lossless with -co QUALITY=100 | 363.42 | 11.41 | 2.31 |
+| 616000_5740000_8bit.tif | JPEG2000 | N/A | COG | Lossless with -co QUALITY=100 | 538.01 | 1.86 | 0.34 |
+| 616000_5740000_8bit.tif | LZMA | N/A | COG | Lossless | 356.72 | 111.39 | 15.34 |
 
 ```python
 import os
@@ -47,11 +44,11 @@ compression_methods = {
     "DEFLATE": ("Lossless", [2]),
     "ZSTD": ("Lossless", [2]),
     "PACKBITS": ("Lossless", [None]),
-    "WEBP": ("Lossless", [None]),  # WEBP Lossless enabled
-    "LERC": ("Lossless", [None]),  # LERC is lossy unless MAX_Z_ERROR=0
-    "LERC_DEFLATE": ("Lossless", [None]),  # LERC_DEFLATE is also lossy unless MAX_Z_ERROR=0
-    "LERC_ZSTD": ("Lossless", [None]),  # LERC_ZSTD is lossy unless MAX_Z_ERROR=0
-    "JPEG2000": ("Lossless", [None]),  # JPEG2000 can be lossless, but default is lossy
+    "WEBP": ("Lossless with -co QUALITY=100", [None]),  # WEBP Lossless enabled
+    "LERC": ("Lossless with -co QUALITY=100", [None]),  # LERC is lossy unless -co QUALITY=100
+    "LERC_DEFLATE": ("Lossless with -co QUALITY=100", [None]),  # LERC_DEFLATE is also lossy unless -co QUALITY=100
+    "LERC_ZSTD": ("Lossless with -co QUALITY=100", [None]),  # LERC_ZSTD is lossy unless -co QUALITY=100
+    "JPEG2000": ("Lossless with -co QUALITY=100", [None]),  # JPEG2000 can be lossless, but default is lossy
     "LZMA": ("Lossless", [None])
 }
 
@@ -86,13 +83,13 @@ def compress_raster(input_file, output_file, compression=None, predictor=None):
 
     # Special cases for specific formats
     if compression == "WEBP":
-        options.append("-co LOSSLESS=TRUE")
+        options.append("-co QUALITY=100")
 
     if compression == "JPEG2000":
         options.append("-co QUALITY=100")  # Enforce lossless JPEG2000
 
     if compression in ["LERC", "LERC_DEFLATE", "LERC_ZSTD"]:
-        options.append("-co MAX_Z_ERROR=0")  # Ensure LERC is lossless
+        options.append("-co QUALITY=100")  # Ensure LERC is lossless
 
     # Build and run command
     command = f'gdal_translate {" ".join(options)} "{input_file}" "{output_file}"'
@@ -168,5 +165,6 @@ with open(output_md, "w") as md_file:
         md_file.write(f"| {file} | {comp} | {pred} | {fmt} | {comp_type} | {size:.2f} | {write_t_str} | {read_t_str} |\n")
 
 print(f"\n✅ Results saved to {output_md}")
+
 
 ```
