@@ -82,10 +82,10 @@ for x in input_data:
 | 616000_5740000_16bit.tif | DEFLATE | 2 | COG | Lossless | 935.78 | 22.53 | 2.78 |
 | 616000_5740000_16bit.tif | ZSTD | 2 | COG | Lossless | 934.86 | 16.19 | 2.11 |
 | 616000_5740000_16bit.tif | PACKBITS | N/A | COG | Lossless | 1025.75 | 12.66 | 1.18 |
-| 616000_5740000_16bit.tif | LERC | N/A | COG | Lossy | 950.67 | 15.11 | 2.66 |
+| 616000_5740000_16bit.tif | LERC | N/A | COG | Lossless | 950.67 | 15.11 | 2.66 |
 | 616000_5740000_16bit.tif | LERC_DEFLATE | N/A | COG | Lossy | 946.69 | 26.65 | 3.77 |
-| 616000_5740000_16bit.tif | LERC_ZSTD | N/A | COG | Lossy | 950.28 | 19.34 | 2.57 |
-| 616000_5740000_16bit.tif | JPEG2000 | N/A | COG | Lossy | 1078.01 | 9.94 | 1.01 |
+| 616000_5740000_16bit.tif | LERC_ZSTD | N/A | COG | Lossless | 950.28 | 19.34 | 2.57 |
+| 616000_5740000_16bit.tif | JPEG2000 | N/A | COG | Lossless | 1078.01 | 9.94 | 1.01 |
 | 616000_5740000_16bit.tif | LZMA | N/A | COG | Lossless | 974.26 | 212.08 | 36.37 |
 | 616000_5740000_8bit.tif | uncompressed | N/A | GTiff | Lossless | 400.01 | - | 1.74 |
 | 616000_5740000_8bit.tif | uncompressed | N/A | COG | Lossless | 576.26 | 11.71 | 2.15 |
@@ -93,10 +93,10 @@ for x in input_data:
 | 616000_5740000_8bit.tif | DEFLATE | 2 | COG | Lossless | 327.03 | 14.67 | 1.38 |
 | 616000_5740000_8bit.tif | ZSTD | 2 | COG | Lossless | 326.47 | 20.59 | 1.13 |
 | 616000_5740000_8bit.tif | PACKBITS | N/A | COG | Lossless | 512.88 | 7.76 | 0.37 |
-| 616000_5740000_8bit.tif | LERC | N/A | COG | Lossy | 358.97 | 11.68 | 2.44 |
-| 616000_5740000_8bit.tif | LERC_DEFLATE | N/A | COG | Lossy | 356.27 | 16.06 | 2.69 |
-| 616000_5740000_8bit.tif | LERC_ZSTD | N/A | COG | Lossy | 356.88 | 14.86 | 2.35 |
-| 616000_5740000_8bit.tif | JPEG2000 | N/A | COG | Lossy | 539.01 | 6.47 | 0.43 |
+| 616000_5740000_8bit.tif | LERC | N/A | COG | Lossless | 358.97 | 11.68 | 2.44 |
+| 616000_5740000_8bit.tif | LERC_DEFLATE | N/A | COG | Lossless | 356.27 | 16.06 | 2.69 |
+| 616000_5740000_8bit.tif | LERC_ZSTD | N/A | COG | Lossless | 356.88 | 14.86 | 2.35 |
+| 616000_5740000_8bit.tif | JPEG2000 | N/A | COG | Lossless | 539.01 | 6.47 | 0.43 |
 | 616000_5740000_8bit.tif | LZMA | N/A | COG | Lossless | 354.05 | 114.08 | 15.31 |
 
 
@@ -123,10 +123,10 @@ compression_methods = {
     "ZSTD": ("Lossless", [2]),
     "PACKBITS": ("Lossless", [None]),
     "WEBP": ("Lossless", [None]),  # WEBP Lossless enabled
-    "LERC": ("Lossy", [None]),  # LERC is lossy unless MAX_Z_ERROR=0
-    "LERC_DEFLATE": ("Lossy", [None]),  # LERC_DEFLATE is also lossy unless MAX_Z_ERROR=0
-    "LERC_ZSTD": ("Lossy", [None]),  # LERC_ZSTD is lossy unless MAX_Z_ERROR=0
-    "JPEG2000": ("Lossy", [None]),  # JPEG2000 can be lossless, but default is lossy
+    "LERC": ("Lossless", [None]),  # LERC is lossy unless MAX_Z_ERROR=0
+    "LERC_DEFLATE": ("Lossless", [None]),  # LERC_DEFLATE is also lossy unless MAX_Z_ERROR=0
+    "LERC_ZSTD": ("Lossless", [None]),  # LERC_ZSTD is lossy unless MAX_Z_ERROR=0
+    "JPEG2000": ("Lossless", [None]),  # JPEG2000 can be lossless, but default is lossy
     "LZMA": ("Lossless", [None])
 }
 
@@ -244,5 +244,4 @@ with open(output_md, "w") as md_file:
 
 print(f"\n✅ Results saved to {output_md}")
 
-print(f"\nResults saved to {output_md}")
 ```
