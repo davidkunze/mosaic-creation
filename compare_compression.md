@@ -74,30 +74,30 @@ for x in input_data:
 
 # Compression Performance Comparison
 
-| Input File | Method | Predictor | Type | Size (MB) | Write Time (s) | Read Time (s) |
-|------------|--------|-----------|------|----------|--------------|--------------|
-| 616000_5740000_16bit.tif | uncompressed | N/A | N/A | 800.00 | - | 0.92 |
-| 616000_5740000_16bit.tif | LZW | 2 | Lossless | 1296.76 | 23.62 | 4.19 |
-| 616000_5740000_16bit.tif | DEFLATE | 2 | Lossless | 935.77 | 22.12 | 2.70 |
-| 616000_5740000_16bit.tif | ZSTD | 2 | Lossless | 934.86 | 15.47 | 1.90 |
-| 616000_5740000_16bit.tif | PACKBITS | N/A | Lossless | 1025.75 | 13.43 | 0.95 |
-| 616000_5740000_16bit.tif | LERC | N/A | Lossless | 950.67 | 15.41 | 2.51 |
-| 616000_5740000_16bit.tif | JPEG2000 | N/A | Lossless | 1078.01 | 9.91 | 1.32 |
-| 616000_5740000_16bit.tif | SNAPPY | N/A | Lossless | 1078.01 | 9.27 | 1.04 |
-| 616000_5740000_16bit.tif | LZMA | N/A | Lossless | 974.26 | 217.13 | 36.99 |
-| 616000_5740000_16bit.tif | RLE | N/A | Lossless | 1078.01 | 9.11 | 1.44 |
-| 616000_5740000_8bit.tif | uncompressed | N/A | N/A | 400.01 | - | 2.47 |
-| 616000_5740000_8bit.tif | LZW | 2 | Lossless | 383.92 | 12.70 | 2.01 |
-| 616000_5740000_8bit.tif | DEFLATE | 2 | Lossless | 327.03 | 15.28 | 1.44 |
-| 616000_5740000_8bit.tif | ZSTD | 2 | Lossless | 326.47 | 21.22 | 1.13 |
-| 616000_5740000_8bit.tif | PACKBITS | N/A | Lossless | 512.88 | 8.07 | 0.45 |
-| 616000_5740000_8bit.tif | LERC | N/A | Lossless | 358.97 | 12.27 | 2.48 |
-| 616000_5740000_8bit.tif | JPEG2000 | N/A | Lossless | 539.01 | 5.94 | 0.33 |
-| 616000_5740000_8bit.tif | SNAPPY | N/A | Lossless | 539.01 | 6.42 | 0.29 |
-| 616000_5740000_8bit.tif | LZMA | N/A | Lossless | 354.05 | 116.30 | 15.61 |
-| 616000_5740000_8bit.tif | RLE | N/A | Lossless | 539.01 | 6.03 | 0.45 |
-
-
+| Input File | Method | Predictor | Format | Type | Size (MB) | Write Time (s) | Read Time (s) |
+|------------|--------|-----------|--------|------|----------|--------------|--------------|
+| 616000_5740000_16bit.tif | uncompressed | N/A | GTiff | Lossless | 800.00 | - | 3.78 |
+| 616000_5740000_16bit.tif | uncompressed | N/A | COG | Lossless | 1369.08 | 19.62 | 3.74 |
+| 616000_5740000_16bit.tif | LZW | 2 | COG | Lossless | 1296.76 | 23.96 | 4.30 |
+| 616000_5740000_16bit.tif | DEFLATE | 2 | COG | Lossless | 935.78 | 22.53 | 2.78 |
+| 616000_5740000_16bit.tif | ZSTD | 2 | COG | Lossless | 934.86 | 16.19 | 2.11 |
+| 616000_5740000_16bit.tif | PACKBITS | N/A | COG | Lossless | 1025.75 | 12.66 | 1.18 |
+| 616000_5740000_16bit.tif | LERC | N/A | COG | Lossy | 950.67 | 15.11 | 2.66 |
+| 616000_5740000_16bit.tif | LERC_DEFLATE | N/A | COG | Lossy | 946.69 | 26.65 | 3.77 |
+| 616000_5740000_16bit.tif | LERC_ZSTD | N/A | COG | Lossy | 950.28 | 19.34 | 2.57 |
+| 616000_5740000_16bit.tif | JPEG2000 | N/A | COG | Lossy | 1078.01 | 9.94 | 1.01 |
+| 616000_5740000_16bit.tif | LZMA | N/A | COG | Lossless | 974.26 | 212.08 | 36.37 |
+| 616000_5740000_8bit.tif | uncompressed | N/A | GTiff | Lossless | 400.01 | - | 1.74 |
+| 616000_5740000_8bit.tif | uncompressed | N/A | COG | Lossless | 576.26 | 11.71 | 2.15 |
+| 616000_5740000_8bit.tif | LZW | 2 | COG | Lossless | 383.92 | 11.93 | 1.99 |
+| 616000_5740000_8bit.tif | DEFLATE | 2 | COG | Lossless | 327.03 | 14.67 | 1.38 |
+| 616000_5740000_8bit.tif | ZSTD | 2 | COG | Lossless | 326.47 | 20.59 | 1.13 |
+| 616000_5740000_8bit.tif | PACKBITS | N/A | COG | Lossless | 512.88 | 7.76 | 0.37 |
+| 616000_5740000_8bit.tif | LERC | N/A | COG | Lossy | 358.97 | 11.68 | 2.44 |
+| 616000_5740000_8bit.tif | LERC_DEFLATE | N/A | COG | Lossy | 356.27 | 16.06 | 2.69 |
+| 616000_5740000_8bit.tif | LERC_ZSTD | N/A | COG | Lossy | 356.88 | 14.86 | 2.35 |
+| 616000_5740000_8bit.tif | JPEG2000 | N/A | COG | Lossy | 539.01 | 6.47 | 0.43 |
+| 616000_5740000_8bit.tif | LZMA | N/A | COG | Lossless | 354.05 | 114.08 | 15.31 |
 
 
 code created by chatgpt; needs to be tested and check
@@ -108,28 +108,29 @@ import time
 import subprocess
 from osgeo import gdal
 
-# List of input raster files (update this list or scan a folder)
+# Directories for input and output files
 input_folder = r'D:\Test\test_compression\daten'
-input_rasters = glob.glob(input_folder+'/*.tif')  # Add multiple raster files here
 output_folder = r'D:\Test\test_compression\results'
-output_md = os.path.join(output_folder,"results.md")  # Markdown output file
+output_md = os.path.join(output_folder, "results.md")  # Markdown output file
 
-# Compression methods with predictors, lossless type, and compression levels
+# Scan for input raster files
+input_rasters = glob.glob(os.path.join(input_folder, '*.tif'))
+
+# Compression methods with their types (Lossless/Lossy)
 compression_methods = {
-    # method, predictor, type, zlevel
-    "LZW": ([1, 2], "Lossless", [None]),  # No compression level support (N/A)
-    "DEFLATE": ([1, 2], "Lossless", [1, 6, 9]),  # Level 1 (fastest), 6 (default), 9 (max compression)
-    "ZSTD": ([1, 2], "Lossless", [1, 9, 22]),  # Level 1 (fastest), 9 (default), 22 (max compression)
-    "PACKBITS": ([None], "Lossless", [None]),  # No compression level support (N/A)
+    "LZW": ("Lossless", [2]),
+    "DEFLATE": ("Lossless", [2]),
+    "ZSTD": ("Lossless", [2]),
+    "PACKBITS": ("Lossless", [None]),
+    "WEBP": ("Lossless", [None]),  # WEBP Lossless enabled
+    "LERC": ("Lossy", [None]),  # LERC is lossy unless MAX_Z_ERROR=0
+    "LERC_DEFLATE": ("Lossy", [None]),  # LERC_DEFLATE is also lossy unless MAX_Z_ERROR=0
+    "LERC_ZSTD": ("Lossy", [None]),  # LERC_ZSTD is lossy unless MAX_Z_ERROR=0
+    "JPEG2000": ("Lossy", [None]),  # JPEG2000 can be lossless, but default is lossy
+    "LZMA": ("Lossless", [None])
 }
 
-# Default compression levels for reference in the table
-default_levels = {
-    "DEFLATE": 6,  # GDAL default for DEFLATE
-    "ZSTD": 9,  # GDAL default for ZSTD
-}
-
-# Create output directory if it doesn't exist
+# Ensure output directory exists
 os.makedirs(output_folder, exist_ok=True)
 
 def get_file_size(file_path):
@@ -141,90 +142,107 @@ def measure_read_time(file_path):
     start_time = time.time()
     dataset = gdal.Open(file_path)
     if dataset:
-        dataset.GetRasterBand(1).ReadAsArray()  # Read data into memory
-    end_time = time.time()
-    return end_time - start_time  # Return reading time
+        dataset.GetRasterBand(1).ReadAsArray()  # Read into memory
+        dataset = None  # Close dataset
+        return round(time.time() - start_time, 2)
+    return None  # Indicate failure
 
-def compress_raster(input_file, output_file, compression, predictor, level):
+def compress_raster(input_file, output_file, compression=None, predictor=None):
     """
-    Compress raster using gdal_translate and measure time.
+    Compress raster using gdal_translate with COG format.
     """
-    options = f"-co COMPRESS={compression}"
-    
-    # Add predictor option if applicable
+    options = ["-of COG"]
+
+    if compression:
+        options.append(f"-co COMPRESS={compression}")
+
     if predictor:
-        options += f" -co PREDICTOR={predictor}"
-    
-    # Add compression level if applicable
-    if level is not None:
-        if compression in ["DEFLATE", "ZSTD"]:
-            options += f" -co ZLEVEL={level}"
-        elif compression == "JPEG":
-            options += f" -co QUALITY={level}"
+        options.append(f"-co PREDICTOR={predictor}")
 
-    
+    # Special cases for specific formats
+    if compression == "WEBP":
+        options.append("-co LOSSLESS=TRUE")
 
-    command = f"gdal_translate -of GTiff {options} {input_file} {output_file}"
+    if compression == "JPEG2000":
+        options.append("-co QUALITY=100")  # Enforce lossless JPEG2000
+
+    if compression in ["LERC", "LERC_DEFLATE", "LERC_ZSTD"]:
+        options.append("-co MAX_Z_ERROR=0")  # Ensure LERC is lossless
+
+    # Build and run command
+    command = f'gdal_translate {" ".join(options)} "{input_file}" "{output_file}"'
     print(command)
+
     start_time = time.time()
-    subprocess.run(command)
-    end_time = time.time()
+    try:
+        subprocess.run(command, shell=True, check=True)
+        return round(time.time() - start_time, 2)  # Return compression time (rounded)
+    except subprocess.CalledProcessError:
+        print(f"❌ Error compressing {input_file} with {compression if compression else 'NO COMPRESSION'}")
+        return None
 
-    return end_time - start_time  # Return compression time
-
-# Store all results
+# Store results for markdown output
 results = []
 
 # Process each input raster
 for input_raster in input_rasters:
-    # Get original image size and read time
-    uncompressed_size = get_file_size(input_raster)
-    uncompressed_read_time = measure_read_time(input_raster)
-    results.append((os.path.basename(input_raster), "uncompressed", "N/A", "N/A", "N/A", uncompressed_size, "N/A", uncompressed_read_time))
+    # Original GTiff file stats
+    original_size = get_file_size(input_raster)
+    original_read_time = measure_read_time(input_raster)
 
-#     # Process each compression method with predictors and levels
-    for compression, (predictors, lossless, levels) in compression_methods.items():
+    # Store original GTiff in table
+    results.append((
+        os.path.basename(input_raster), "uncompressed", "N/A", "GTiff", "Lossless",
+        round(original_size, 2), "-", original_read_time
+    ))
+
+    # Generate an uncompressed COG
+    cog_uncompressed_filename = f"{os.path.splitext(os.path.basename(input_raster))[0]}_COG.tif"
+    cog_uncompressed_file = os.path.join(output_folder, cog_uncompressed_filename)
+
+    cog_write_time = compress_raster(input_raster, cog_uncompressed_file)
+    if cog_write_time is not None:
+        cog_read_time = measure_read_time(cog_uncompressed_file)
+        cog_size = get_file_size(cog_uncompressed_file)
+
+        # Store COG uncompressed stats
+        results.append((
+            os.path.basename(input_raster), "uncompressed", "N/A", "COG", "Lossless",
+            round(cog_size, 2), cog_write_time, cog_read_time
+        ))
+
+    # Loop through compression methods
+    for compression, (comp_type, predictors) in compression_methods.items():
         for predictor in predictors:
-            for level in levels:
-                # Determine if a compression level is available
-                if level is None and compression not in default_levels:
-                    level_str = "N/A"
-                elif level is None:
-                    level_str = "Default"
-                elif default_levels.get(compression) == level:
-                    level_str = f"{level} (Default)"
-                else:
-                    level_str = str(level)
+            # Generate COG compressed version
+            cog_output_filename = f"{os.path.splitext(os.path.basename(input_raster))[0]}_{compression}_COG.tif"
+            cog_output_file = os.path.join(output_folder, cog_output_filename)
 
-                # Construct output filename
-                output_filename = f"{os.path.splitext(os.path.basename(input_raster))[0]}_{compression}"
-                if predictor:
-                    output_filename += f"_PRED{predictor}"
-                if level is not None:
-                    output_filename += f"_LVL{level}"
-                output_filename += ".tif"
+            cog_write_time = compress_raster(input_raster, cog_output_file, compression, predictor)
+            if cog_write_time is None:
+                continue
 
-                output_file = os.path.join(output_folder, output_filename)
+            cog_read_time = measure_read_time(cog_output_file)
+            cog_file_size = get_file_size(cog_output_file)
 
-                # Measure compression (writing) time
-                write_time = compress_raster(input_raster, output_file, compression, predictor, level)
-
-                # Measure decompression (reading) time
-                read_time = measure_read_time(output_file)
-
-                # Get file size
-                file_size = get_file_size(output_file)
-
-                # Store results
-                results.append((os.path.basename(input_raster), compression, predictor if predictor else "N/A", level_str, lossless, file_size, write_time, read_time))
+            results.append((
+                os.path.basename(input_raster), compression, predictor if predictor else "N/A",
+                "COG", comp_type, round(cog_file_size, 2), cog_write_time, cog_read_time
+            ))
 
 # Write results to Markdown file
 with open(output_md, "w") as md_file:
     md_file.write("# Compression Performance Comparison\n\n")
-    md_file.write("| Input File | Method   | Predictor | Level         | Type     | Size (MB) | Write Time (s) | Read Time (s) |\n")
-    md_file.write("|------------|----------|-----------|--------------|----------|----------|----------------|---------------|\n")
-    for file, comp, pred, level, lossless, size, write_t, read_t in results:
-        md_file.write(f"| {file:<10} | {comp:<8} | {pred:<9} | {level:<12} | {lossless:<8} | {size:<8.2f} | {write_t:<14.4} | {read_t:<13.4} |\n")
+    md_file.write("| Input File | Method | Predictor | Format | Type | Size (MB) | Write Time (s) | Read Time (s) |\n")
+    md_file.write("|------------|--------|-----------|--------|------|----------|--------------|--------------|\n")
+    
+    for file, comp, pred, fmt, comp_type, size, write_t, read_t in results:
+        write_t_str = f"{write_t:.2f}" if isinstance(write_t, (int, float)) else write_t  # Keep "-" for uncompressed
+        read_t_str = f"{read_t:.2f}" if isinstance(read_t, (int, float)) else "Error"
+        
+        md_file.write(f"| {file} | {comp} | {pred} | {fmt} | {comp_type} | {size:.2f} | {write_t_str} | {read_t_str} |\n")
+
+print(f"\n✅ Results saved to {output_md}")
 
 print(f"\nResults saved to {output_md}")
 ```
