@@ -83,7 +83,7 @@ for x in input_data:
 | 616000_5740000_16bit.tif | ZSTD | 2 | COG | Lossless | 934.86 | 16.19 | 2.11 |
 | 616000_5740000_16bit.tif | PACKBITS | N/A | COG | Lossless | 1025.75 | 12.66 | 1.18 |
 | 616000_5740000_16bit.tif | LERC | N/A | COG | Lossless | 950.67 | 15.11 | 2.66 |
-| 616000_5740000_16bit.tif | LERC_DEFLATE | N/A | COG | Lossy | 946.69 | 26.65 | 3.77 |
+| 616000_5740000_16bit.tif | LERC_DEFLATE | N/A | COG | Lossless | 946.69 | 26.65 | 3.77 |
 | 616000_5740000_16bit.tif | LERC_ZSTD | N/A | COG | Lossless | 950.28 | 19.34 | 2.57 |
 | 616000_5740000_16bit.tif | JPEG2000 | N/A | COG | Lossless | 1078.01 | 9.94 | 1.01 |
 | 616000_5740000_16bit.tif | LZMA | N/A | COG | Lossless | 974.26 | 212.08 | 36.37 |
