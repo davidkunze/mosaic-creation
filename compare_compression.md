@@ -73,42 +73,30 @@ for x in input_data:
 ```
 
 # Compression Performance Comparison
-# Compression Performance Comparison
 
-| Input File | Method | Predictor | Level | Type | Size (MB) | Write Time (s) | Read Time (s) |
-|------------|--------|-----------|-------|------|----------|--------------|--------------|
-| 616000_5740000_16bit.tif | uncompressed | N/A | N/A | N/A | 800.00 | - | 1.74 |
-| 616000_5740000_16bit.tif | LZW | 1 | N/A | Lossless | 1026.03 | 9.08 | 6.66 |
-| 616000_5740000_16bit.tif | LZW | 2 | N/A | Lossless | 967.24 | 11.29 | 6.99 |
-| 616000_5740000_16bit.tif | DEFLATE | 1 | 1 | Lossless | 748.30 | 7.98 | 5.13 |
-| 616000_5740000_16bit.tif | DEFLATE | 1 | Default | Lossless | 747.73 | 9.98 | 5.29 |
-| 616000_5740000_16bit.tif | DEFLATE | 1 | 9 | Lossless | 746.79 | 19.84 | 5.31 |
-| 616000_5740000_16bit.tif | DEFLATE | 2 | 1 | Lossless | 699.11 | 7.85 | 5.37 |
-| 616000_5740000_16bit.tif | DEFLATE | 2 | Default | Lossless | 699.71 | 10.36 | 5.49 |
-| 616000_5740000_16bit.tif | DEFLATE | 2 | 9 | Lossless | 698.71 | 21.22 | 5.38 |
-| 616000_5740000_16bit.tif | ZSTD | 1 | 1 | Lossless | 754.16 | 2.84 | 4.80 |
-| 616000_5740000_16bit.tif | ZSTD | 1 | Default | Lossless | 754.16 | 3.25 | 4.85 |
-| 616000_5740000_16bit.tif | ZSTD | 1 | 22 | Lossless | 754.16 | 3.15 | 4.69 |
-| 616000_5740000_16bit.tif | ZSTD | 2 | 1 | Lossless | 698.90 | 3.61 | 5.46 |
-| 616000_5740000_16bit.tif | ZSTD | 2 | Default | Lossless | 698.90 | 3.22 | 5.42 |
-| 616000_5740000_16bit.tif | ZSTD | 2 | 22 | Lossless | 698.90 | 3.37 | 4.83 |
-| 616000_5740000_16bit.tif | PACKBITS | N/A | N/A | Lossless | 768.83 | 3.99 | 4.35 |
-| 616000_5740000_8bit.tif | uncompressed | N/A | N/A | N/A | 400.01 | - | 1.89 |
-| 616000_5740000_8bit.tif | LZW | 1 | N/A | Lossless | 441.86 | 4.88 | 2.07 |
-| 616000_5740000_8bit.tif | LZW | 2 | N/A | Lossless | 278.30 | 5.15 | 2.00 |
-| 616000_5740000_8bit.tif | DEFLATE | 1 | 1 | Lossless | 343.88 | 3.67 | 1.07 |
-| 616000_5740000_8bit.tif | DEFLATE | 1 | Default | Lossless | 338.36 | 5.21 | 1.20 |
-| 616000_5740000_8bit.tif | DEFLATE | 1 | 9 | Lossless | 337.19 | 10.58 | 1.33 |
-| 616000_5740000_8bit.tif | DEFLATE | 2 | 1 | Lossless | 246.78 | 3.71 | 1.30 |
-| 616000_5740000_8bit.tif | DEFLATE | 2 | Default | Lossless | 244.89 | 6.51 | 1.38 |
-| 616000_5740000_8bit.tif | DEFLATE | 2 | 9 | Lossless | 238.65 | 19.02 | 1.40 |
-| 616000_5740000_8bit.tif | ZSTD | 1 | 1 | Lossless | 345.94 | 1.83 | 0.73 |
-| 616000_5740000_8bit.tif | ZSTD | 1 | Default | Lossless | 345.94 | 1.92 | 0.73 |
-| 616000_5740000_8bit.tif | ZSTD | 1 | 22 | Lossless | 345.94 | 1.93 | 0.73 |
-| 616000_5740000_8bit.tif | ZSTD | 2 | 1 | Lossless | 257.05 | 8.11 | 0.92 |
-| 616000_5740000_8bit.tif | ZSTD | 2 | Default | Lossless | 257.05 | 8.11 | 0.92 |
-| 616000_5740000_8bit.tif | ZSTD | 2 | 22 | Lossless | 257.05 | 8.11 | 0.91 |
-| 616000_5740000_8bit.tif | PACKBITS | N/A | N/A | Lossless | 384.40 | 2.13 | 0.33 |
+| Input File | Method | Predictor | Type | Size (MB) | Write Time (s) | Read Time (s) |
+|------------|--------|-----------|------|----------|--------------|--------------|
+| 616000_5740000_16bit.tif | uncompressed | N/A | N/A | 800.00 | - | 0.92 |
+| 616000_5740000_16bit.tif | LZW | 2 | Lossless | 1296.76 | 23.62 | 4.19 |
+| 616000_5740000_16bit.tif | DEFLATE | 2 | Lossless | 935.77 | 22.12 | 2.70 |
+| 616000_5740000_16bit.tif | ZSTD | 2 | Lossless | 934.86 | 15.47 | 1.90 |
+| 616000_5740000_16bit.tif | PACKBITS | N/A | Lossless | 1025.75 | 13.43 | 0.95 |
+| 616000_5740000_16bit.tif | LERC | N/A | Lossless | 950.67 | 15.41 | 2.51 |
+| 616000_5740000_16bit.tif | JPEG2000 | N/A | Lossless | 1078.01 | 9.91 | 1.32 |
+| 616000_5740000_16bit.tif | SNAPPY | N/A | Lossless | 1078.01 | 9.27 | 1.04 |
+| 616000_5740000_16bit.tif | LZMA | N/A | Lossless | 974.26 | 217.13 | 36.99 |
+| 616000_5740000_16bit.tif | RLE | N/A | Lossless | 1078.01 | 9.11 | 1.44 |
+| 616000_5740000_8bit.tif | uncompressed | N/A | N/A | 400.01 | - | 2.47 |
+| 616000_5740000_8bit.tif | LZW | 2 | Lossless | 383.92 | 12.70 | 2.01 |
+| 616000_5740000_8bit.tif | DEFLATE | 2 | Lossless | 327.03 | 15.28 | 1.44 |
+| 616000_5740000_8bit.tif | ZSTD | 2 | Lossless | 326.47 | 21.22 | 1.13 |
+| 616000_5740000_8bit.tif | PACKBITS | N/A | Lossless | 512.88 | 8.07 | 0.45 |
+| 616000_5740000_8bit.tif | LERC | N/A | Lossless | 358.97 | 12.27 | 2.48 |
+| 616000_5740000_8bit.tif | JPEG2000 | N/A | Lossless | 539.01 | 5.94 | 0.33 |
+| 616000_5740000_8bit.tif | SNAPPY | N/A | Lossless | 539.01 | 6.42 | 0.29 |
+| 616000_5740000_8bit.tif | LZMA | N/A | Lossless | 354.05 | 116.30 | 15.61 |
+| 616000_5740000_8bit.tif | RLE | N/A | Lossless | 539.01 | 6.03 | 0.45 |
+
 
 
 
