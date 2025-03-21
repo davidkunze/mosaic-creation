@@ -1,5 +1,32 @@
 # Compression Performance Comparison
 
+| Method   | Compression Options | Mean Size (MB) | Mean Write Time (s) | Mean Read Time (s) |
+|----------|----------------------|----------------|----------------------|----------------------|
+| Original (Uncompressed) | None | 400.01 | - | 0.41 |
+| COG (No Compression) | None | 106.64 | 7.46 | 0.66 |
+| DEFLATE | Predictor=NO, Level=1 | 84.28 | 6.88 | 0.56 |
+| DEFLATE | Predictor=NO, Level=6 | 82.63 | 8.1 | 0.57 |
+| DEFLATE | Predictor=NO, Level=9 | 80.4 | 19.42 | 0.54 |
+| DEFLATE | Predictor=YES, Level=1 | 58.75 | 6.85 | 0.6 |
+| DEFLATE | Predictor=YES, Level=6 | 57.93 | 9.24 | 0.61 |
+| DEFLATE | Predictor=YES, Level=9 | 56.21 | 25.29 | 0.52 |
+| LERC | None | 67.7 | 7.56 | 0.87 |
+| LERC_DEFLATE | None | 65.3 | 8.64 | 0.96 |
+| LERC_ZSTD | None | 65.52 | 8.74 | 0.89 |
+| LZMA | None | 61.44 | 39.38 | <span style="color:red">4.15</span> |
+| LZW | Predictor=NO, Level=None | 106.64 | 7.39 | 0.65 |
+| LZW | Predictor=YES, Level=None | 65.54 | 7.74 | 0.74 |
+| PACKBITS | None | <span style="color:red">112.69</span> | 5.79 | <span style="color:green">0.28</span> |
+| ZSTD | Predictor=NO, Level=1 | 88.67 | <span style="color:green">5.55</span> | 0.32 |
+| ZSTD | Predictor=NO, Level=9 | 84.4 | 10.25 | 0.39 |
+| ZSTD | Predictor=NO, Level=22 | 77.51 | 209.08 | 0.54 |
+| ZSTD | Predictor=YES, Level=1 | 62.77 | 6.24 | 0.39 |
+| ZSTD | Predictor=YES, Level=9 | 55.55 | 11.73 | 0.46 |
+| ZSTD | Predictor=YES, Level=22 | <span style="color:green">52.4</span> | <span style="color:red">217.19</span> | 0.49 |
+
+
+# Compression Performance Comparison
+
 <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
 <table class="sortable">
 <thead>
