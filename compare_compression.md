@@ -28,34 +28,31 @@
 
 ```python
 import os
-import glob
 import time
 import subprocess
 from osgeo import gdal
 
-# Directories for input and output files
-input_folder = r'D:\Test\test_compression\daten'
-output_folder = r'D:\Test\test_compression\results'
-output_md = os.path.join(output_folder, "results.md")  # Markdown output file
+# Input raster file
+input_raster = "input.tif"  # Change to your raster file
+output_folder = "compressed_outputs"
+output_md = "results.md"  # Markdown output file
 
-# Scan for input raster files
-input_rasters = glob.glob(os.path.join(input_folder, '*.tif'))
-
-# Compression methods with their types (Lossless/Lossy)
+# Compression methods with predictors, lossless type, and compression levels
 compression_methods = {
-    "WEBP": ("Lossless", [None]),
-    "LZW": ("Lossless", [2]),
-    "DEFLATE": ("Lossless", [2]),
-    "ZSTD": ("Lossless", [2]),
-    "PACKBITS": ("Lossless", [None]),
-    "LERC": ("Lossy", [None]),
-    "LERC_DEFLATE": ("Lossless", [None]),
-    "LERC_ZSTD": ("Lossless", [None]),
-    "JPEG2000": ("Lossless", [None]),
-    "LZMA": ("Lossless", [None])
+    "LZW": ([1, 2, 3], "Lossless", [None]),  # No compression level support (N/A)
+    "DEFLATE": ([1, 2, 3], "Lossless", [1, 6, 9]),  # Level 1 (fastest), 6 (default), 9 (max compression)
+    "ZSTD": ([1, 2, 3], "Lossless", [1, 9, 22]),  # Level 1 (fastest), 9 (default), 22 (max compression)
+    "JPEG": ([None], "Lossy", [100, 10]),  # Quality 100 (best), 10 (worst)
+    "PACKBITS": ([None], "Lossless", [None]),  # No compression level support (N/A)
 }
 
-# Ensure output directory exists
+# Default compression levels for reference in the table
+default_levels = {
+    "DEFLATE": 6,  # GDAL default for DEFLATE
+    "ZSTD": 9,  # GDAL default for ZSTD
+}
+
+# Create output directory if it doesn't exist
 os.makedirs(output_folder, exist_ok=True)
 
 def get_file_size(file_path):
@@ -67,111 +64,91 @@ def measure_read_time(file_path):
     start_time = time.time()
     dataset = gdal.Open(file_path)
     if dataset:
-        dataset.GetRasterBand(1).ReadAsArray()  # Read into memory
-        dataset = None  # Close dataset
-        return round(time.time() - start_time, 2)
-    return None
+        dataset.GetRasterBand(1).ReadAsArray()  # Read data into memory
+    end_time = time.time()
+    return end_time - start_time  # Return reading time
 
-def compress_raster(input_file, output_file, compression=None, predictor=None):
-    """Compress raster using gdal_translate with COG format."""
-    options = ["-of COG"]
-
-    if compression:
-        options.append(f"-co COMPRESS={compression}")
+def compress_raster(input_file, output_file, compression, predictor, level):
+    """
+    Compress raster using gdal_translate and measure time.
+    """
+    options = f"-co COMPRESS={compression}"
+    
+    # Add predictor option if applicable
     if predictor:
-        options.append(f"-co PREDICTOR={predictor}")
-    if compression in ["WEBP","LERC", "LERC_DEFLATE", "LERC_ZSTD","JPEG2000"]:
-        options.append("-co QUALITY=100")
+        options += f" -co PREDICTOR={predictor}"
+    
+    # Add compression level if applicable
+    if level is not None:
+        if compression in ["DEFLATE", "ZSTD"]:
+            options += f" -co ZLEVEL={level}"
+        elif compression == "JPEG":
+            options += f" -co QUALITY={level}"
 
-    command = f'gdal_translate {" ".join(options)} "{input_file}" "{output_file}"'
-    print(command)
+    # Special case for JPEG (requires photometric setting)
+    if compression == "JPEG":
+        options += " -co PHOTOMETRIC=YCBCR"
 
+    command = f"gdal_translate -of GTiff {options} {input_file} {output_file}"
+    
     start_time = time.time()
-    try:
-        subprocess.run(command, shell=True, check=True)
-        return round(time.time() - start_time, 2)
-    except subprocess.CalledProcessError:
-        print(f"❌ Error compressing {input_file} with {compression if compression else 'NO COMPRESSION'}")
-        return None
+    subprocess.run(command, shell=True, check=True)
+    end_time = time.time()
 
-# Store results for markdown output
-results = []
+    return end_time - start_time  # Return compression time
 
-# Process each input raster
-for input_raster in input_rasters:
-    original_size = get_file_size(input_raster)
-    original_read_time = measure_read_time(input_raster)
+# Get original image size and read time
+original_size = get_file_size(input_raster)
+original_read_time = measure_read_time(input_raster)
 
-    results.append((
-        os.path.basename(input_raster), "uncompressed", "N/A", "GTiff", "Lossless",
-        round(original_size, 2), "-", original_read_time
-    ))
+# Store results
+results = [("Original", "N/A", "N/A", "N/A", original_size, "N/A", original_read_time)]
 
-    cog_uncompressed_filename = f"{os.path.splitext(os.path.basename(input_raster))[0]}_COG.tif"
-    cog_uncompressed_file = os.path.join(output_folder, cog_uncompressed_filename)
+# Process each compression method with predictors and levels
+for compression, (predictors, lossless, levels) in compression_methods.items():
+    for predictor in predictors:
+        for level in levels:
+            # Determine if a compression level is available
+            if level is None and compression not in default_levels:
+                level_str = "N/A"
+            elif level is None:
+                level_str = "Default"
+            elif default_levels.get(compression) == level:
+                level_str = f"{level} (Default)"
+            else:
+                level_str = str(level)
 
-    cog_write_time = compress_raster(input_raster, cog_uncompressed_file)
-    if cog_write_time is not None:
-        cog_read_time = measure_read_time(cog_uncompressed_file)
-        cog_size = get_file_size(cog_uncompressed_file)
+            # Construct output filename
+            output_filename = f"compressed_{compression}"
+            if predictor:
+                output_filename += f"_PRED{predictor}"
+            if level is not None:
+                output_filename += f"_LVL{level}"
+            output_filename += ".tif"
 
-        results.append((
-            os.path.basename(input_raster), "uncompressed", "N/A", "COG", "Lossless",
-            round(cog_size, 2), cog_write_time, cog_read_time
-        ))
+            output_file = os.path.join(output_folder, output_filename)
 
-    for compression, (comp_type, predictors) in compression_methods.items():
-        for predictor in predictors:
-            cog_output_filename = f"{os.path.splitext(os.path.basename(input_raster))[0]}_{compression}_COG.tif"
-            cog_output_file = os.path.join(output_folder, cog_output_filename)
+            # Measure compression (writing) time
+            write_time = compress_raster(input_raster, output_file, compression, predictor, level)
 
-            cog_write_time = compress_raster(input_raster, cog_output_file, compression, predictor)
-            if cog_write_time is None:
-                continue
+            # Measure decompression (reading) time
+            read_time = measure_read_time(output_file)
 
-            cog_read_time = measure_read_time(cog_output_file)
-            cog_file_size = get_file_size(cog_output_file)
+            # Get file size
+            file_size = get_file_size(output_file)
 
-            results.append((
-                os.path.basename(input_raster), compression, predictor if predictor else "N/A",
-                "COG", comp_type, round(cog_file_size, 2), cog_write_time, cog_read_time
-            ))
+            # Store results
+            results.append((compression, predictor if predictor else "N/A", level_str, lossless, file_size, write_time, read_time))
 
 # Write results to Markdown file
 with open(output_md, "w") as md_file:
     md_file.write("# Compression Performance Comparison\n\n")
-    md_file.write("| Input File | Method | Predictor | Format | Type | Size (MB) | Write Time (s) | Read Time (s) |\n")
-    md_file.write("|------------|--------|-----------|--------|------|----------|--------------|--------------|\n")
-    
-    for file, comp, pred, fmt, comp_type, size, write_t, read_t in results:
-        write_t_str = f"{write_t:.2f}" if isinstance(write_t, (int, float)) else write_t  # Keep "-" for uncompressed
-        read_t_str = f"{read_t:.2f}" if isinstance(read_t, (int, float)) else "Error"
-        
-        md_file.write(f"| {file} | {comp} | {pred} | {fmt} | {comp_type} | {size:.2f} | {write_t_str} | {read_t_str} |\n")
+    md_file.write("| Method   | Predictor | Level         | Type     | Size (MB) | Write Time (s) | Read Time (s) |\n")
+    md_file.write("|----------|-----------|--------------|----------|----------|----------------|---------------|\n")
+    for comp, pred, level, lossless, size, write_t, read_t in results:
+        md_file.write(f"| {comp:<8} | {pred:<9} | {level:<12} | {lossless:<8} | {size:<8.2f} | {write_t:<14.4f} | {read_t:<13.4f} |\n")
 
-print(f"\n✅ Results saved to {output_md}")
-
-
-# # Write results to Markdown file with sortable table
-# with open(output_md, "w") as md_file:
-#     md_file.write("# Compression Performance Comparison\n\n")
-#     md_file.write('<script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>\n')
-#     md_file.write('<table class="sortable">\n')
-#     md_file.write("<thead>\n")
-#     md_file.write("<tr><th>Input File</th><th>Method</th><th>Predictor</th><th>Format</th><th>Type</th>"
-#                   "<th>Size (MB)</th><th>Write Time (s)</th><th>Read Time (s)</th></tr>\n")
-#     md_file.write("</thead>\n<tbody>\n")
-    
-#     for file, comp, pred, fmt, comp_type, size, write_t, read_t in results:
-#         write_t_str = f"{write_t:.2f}" if isinstance(write_t, (int, float)) else write_t
-#         read_t_str = f"{read_t:.2f}" if isinstance(read_t, (int, float)) else "Error"
-        
-#         md_file.write(f"<tr><td>{file}</td><td>{comp}</td><td>{pred}</td><td>{fmt}</td><td>{comp_type}</td>"
-#                       f"<td>{size:.2f}</td><td>{write_t_str}</td><td>{read_t_str}</td></tr>\n")
-
-#     md_file.write("</tbody>\n</table>\n")
-
-# print(f"\n✅ Results saved to {output_md}")
+print(f"\nResults saved to {output_md}")
 
 
 ```
