@@ -1,29 +1,30 @@
-| Method                     | Compression Options | Mean Size (MB) ± StdDev | Size Compared to Uncompressed COG (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |
-|----------------------------|---------------------|-------------------------|-----------------------------------------------|-----------------------------|----------------------------|
-| GTiff_uncompressed (Original) |                     | 400.01 ± 0.00 | 70.36 ± 2.11  | 0.00 ± 0.00 | 1.74 ± 0.66 |
-| COG_uncompressed           |                     | 568.90 ± 16.84 | 100.00 ± 0.00  | 12.44 ± 0.67 | 2.11 ± 0.20 |
-| LZW                        |                     | 568.90 ± 16.84 | 100.00 ± 0.00  | 12.54 ± 0.98 | 2.12 ± 0.14 |
-| LZW                        | -co PREDICTOR=2     | 393.12 ± 20.21 | 69.08 ± 2.17  | 12.76 ± 0.74 | 2.05 ± 0.13 |
-| DEFLATE                    | -co ZLEVEL=1        | 431.79 ± 9.88 | 75.91 ± 0.63  | 13.50 ± 0.85 | 1.20 ± 0.08 |
-| DEFLATE                    | -co ZLEVEL=6        | 431.79 ± 9.88 | 75.91 ± 0.63  | 13.33 ± 0.78 | 1.16 ± 0.10 |
-| DEFLATE                    | -co ZLEVEL=9        | 431.79 ± 9.88 | 75.91 ± 0.63  | 13.18 ± 0.56 | 1.16 ± 0.05 |
-| DEFLATE                    | -co ZLEVEL=1 -co PREDICTOR=2 | 332.98 ± 14.42 | 58.52 ± 1.42  | 15.54 ± 1.06 | 1.34 ± 0.10 |
-| DEFLATE                    | -co ZLEVEL=6 -co PREDICTOR=2 | 332.98 ± 14.42 | 58.52 ± 1.42  | 15.34 ± 0.69 | 1.34 ± 0.09 |
-| DEFLATE                    | -co ZLEVEL=9 -co PREDICTOR=2 | 332.98 ± 14.42 | 58.52 ± 1.42  | 15.83 ± 1.08 | 1.34 ± 0.10 |
-| ZSTD                       | -co ZLEVEL=1        | 437.82 ± 10.11 | 76.97 ± 0.71  | 11.72 ± 0.89 | 0.75 ± 0.10 |
-| ZSTD                       | -co ZLEVEL=9        | 437.82 ± 10.11 | 76.97 ± 0.71  | 12.09 ± 0.82 | 0.80 ± 0.18 |
-| ZSTD                       | -co ZLEVEL=22       | 437.82 ± 10.11 | 76.97 ± 0.71  | 12.02 ± 0.59 | 0.84 ± 0.22 |
-| ZSTD                       | -co ZLEVEL=1 -co PREDICTOR=2 | 333.67 ± 16.47 | 58.64 ± 1.81  | 21.60 ± 0.83 | 1.02 ± 0.09 |
-| ZSTD                       | -co ZLEVEL=9 -co PREDICTOR=2 | 333.67 ± 16.47 | 58.64 ± 1.81  | 22.05 ± 1.31 | 1.02 ± 0.08 |
-| ZSTD                       | -co ZLEVEL=22 -co PREDICTOR=2 | 333.67 ± 16.47 | 58.64 ± 1.81  | 21.32 ± 0.99 | 1.03 ± 0.13 |
-| LZMA                       | -co ZLEVEL=1        | 351.00 ± 11.97 | 61.70 ± 0.90  | 119.58 ± 3.60 | 15.61 ± 0.53 |
-| LZMA                       | -co ZLEVEL=6        | 351.00 ± 11.97 | 61.70 ± 0.90  | 117.12 ± 4.26 | 15.28 ± 0.50 |
-| LZMA                       | -co ZLEVEL=9        | 351.00 ± 11.97 | 61.70 ± 0.90  | 119.14 ± 5.12 | 15.42 ± 0.81 |
-| PACKBITS                   |                     | 512.98 ± 0.01 | 90.24 ± 2.70  | 8.62 ± 1.35 | 0.30 ± 0.06 |
-| LERC                       |                     | 365.40 ± 14.19 | 64.23 ± 1.59  | 12.47 ± 0.55 | 2.42 ± 0.24 |
-| LERC_DEFLATE               |                     | 362.62 ± 14.48 | 63.74 ± 1.61  | 16.72 ± 1.07 | 2.80 ± 0.36 |
-| LERC_ZSTD                  |                     | 363.26 ± 14.29 | 63.85 ± 1.60  | 15.35 ± 0.82 | 2.32 ± 0.10 |
+#Test 1 Output Format: GTiff
 
+| Method                     | Compression Options | Mean Size (MB) ± StdDev | Size Compared to Original (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |
+|----------------------------|---------------------|-------------------------|-----------------------------------------------|-----------------------------|----------------------------|
+| GTiff_uncompressed (Original) |                     | 400.01 ± 0.00 | 100.00 ± 0.00  | 0.00 ± 0.00 | 2.35 ± 1.40 |
+| LZW                        |                     | 435.80 ± 11.11 | 108.95 ± 2.78  | 5.16 ± 0.36 | 1.99 ± 0.05 |
+| LZW                        | -co PREDICTOR=2     | 286.12 ± 14.42 | 71.53 ± 3.61  | 5.23 ± 0.10 | 1.95 ± 0.06 |
+| DEFLATE                    | -co ZLEVEL=1        | 340.94 ± 3.45 | 85.23 ± 0.86  | 3.48 ± 0.20 | 1.06 ± 0.04 |
+| DEFLATE                    | -co ZLEVEL=6        | 333.64 ± 4.90 | 83.41 ± 1.23  | 5.28 ± 0.17 | 1.19 ± 0.04 |
+| DEFLATE                    | -co ZLEVEL=9        | 332.28 ± 5.62 | 83.07 ± 1.41  | 11.25 ± 0.54 | 1.19 ± 0.06 |
+| DEFLATE                    | -co ZLEVEL=1 -co PREDICTOR=2 | 253.05 ± 10.20 | 63.26 ± 2.55  | 3.68 ± 0.08 | 1.32 ± 0.04 |
+| DEFLATE                    | -co ZLEVEL=6 -co PREDICTOR=2 | 250.67 ± 9.29 | 62.67 ± 2.32  | 6.54 ± 0.24 | 1.44 ± 0.08 |
+| DEFLATE                    | -co ZLEVEL=9 -co PREDICTOR=2 | 244.01 ± 9.99 | 61.00 ± 2.50  | 18.45 ± 1.14 | 1.46 ± 0.07 |
+| ZSTD                       | -co ZLEVEL=1        | 344.78 ± 2.46 | 86.19 ± 0.62  | 1.82 ± 0.16 | 0.73 ± 0.04 |
+| ZSTD                       | -co ZLEVEL=9        | 344.78 ± 2.46 | 86.19 ± 0.62  | 1.87 ± 0.17 | 0.74 ± 0.05 |
+| ZSTD                       | -co ZLEVEL=22       | 344.78 ± 2.46 | 86.19 ± 0.62  | 1.86 ± 0.14 | 0.72 ± 0.04 |
+| ZSTD                       | -co ZLEVEL=1 -co PREDICTOR=2 | 263.40 ± 11.71 | 65.85 ± 2.93  | 8.02 ± 0.30 | 0.85 ± 0.03 |
+| ZSTD                       | -co ZLEVEL=9 -co PREDICTOR=2 | 263.40 ± 11.71 | 65.85 ± 2.93  | 8.01 ± 0.29 | 0.86 ± 0.03 |
+| ZSTD                       | -co ZLEVEL=22 -co PREDICTOR=2 | 263.40 ± 11.71 | 65.85 ± 2.93  | 8.03 ± 0.35 | 0.85 ± 0.03 |
+| LZMA                       | -co ZLEVEL=1        | 271.26 ± 7.11 | 67.81 ± 1.78  | 70.28 ± 2.52 | 16.12 ± 0.37 |
+| LZMA                       | -co ZLEVEL=6        | 271.26 ± 7.11 | 67.81 ± 1.78  | 70.86 ± 3.61 | 15.98 ± 0.34 |
+| LZMA                       | -co ZLEVEL=9        | 271.26 ± 7.11 | 67.81 ± 1.78  | 70.64 ± 3.04 | 15.92 ± 0.36 |
+| PACKBITS                   |                     | 384.48 ± 0.03 | 96.12 ± 0.01  | 2.02 ± 0.08 | 0.33 ± 0.05 |
+| LERC                       |                     | 271.04 ± 10.07 | 67.76 ± 2.52  | 7.41 ± 0.09 | 2.47 ± 0.07 |
+| LERC_DEFLATE               |                     | 271.13 ± 10.10 | 67.78 ± 2.52  | 9.81 ± 0.18 | 2.66 ± 0.05 |
+| LERC_ZSTD                  |                     | 271.14 ± 10.07 | 67.78 ± 2.52  | 7.89 ± 0.12 | 2.50 ± 0.06 |
+| JPEG2000                   |                     | 381.53 ± 0.00 | 95.38 ± 0.00  | 0.79 ± 0.22 | 0.33 ± 0.04 |
 
 
 ```python
@@ -52,8 +53,8 @@ compression_methods = {
     "PACKBITS": { "levels": [None], "predictor": None},
     "LERC": { "levels": [None], "predictor": None},
     "LERC_DEFLATE": { "levels": [None], "predictor": None},
-    "LERC_ZSTD": { "levels": [None], "predictor": None}}
-    # ,"JPEG2000": { "levels": [None], "predictor": None}}
+    "LERC_ZSTD": { "levels": [None], "predictor": None}
+    ,"JPEG2000": { "levels": [None], "predictor": None}}
 
 # Ensure output directory exists
 os.makedirs(output_folder, exist_ok=True)
@@ -73,8 +74,8 @@ def measure_read_time(file_path):
     return None
 
 def compress_raster(input_file, output_file, compression=None, predictor=None, level=None):
-    """Compress raster using gdal_translate with COG format."""
-    options = ["-of COG"]
+    """Compress raster using gdal_translate"""
+    options = ["-of GTiff"]
 
     # Add compression type to options
     if compression:
@@ -105,43 +106,23 @@ def compress_raster(input_file, output_file, compression=None, predictor=None, l
 
 # Store results for markdown output
 compression_stats = {}
-uncompressed_cog_file = os.path.join(output_folder, "uncompressed_COG.tif")
 
 # Process each input raster
 for input_raster in input_rasters:
-    original_size = get_file_size(input_raster)
-    original_read_time = measure_read_time(input_raster)
-
-    # Process uncompressed COG file first
-    cog_uncompressed_filename = f"{os.path.splitext(os.path.basename(input_raster))[0]}_COG.tif"
-    cog_uncompressed_file = os.path.join(output_folder, cog_uncompressed_filename)
-
-    cog_write_time = compress_raster(input_raster, cog_uncompressed_file)
-    cog_read_time = measure_read_time(cog_uncompressed_file)
-    cog_uncompressed_file_size = get_file_size(cog_uncompressed_file)
-    cog_file_size_percantage = (cog_uncompressed_file_size / cog_uncompressed_file_size) * 100
-   
-    # Original file stats (GTiff)
-    orig_read_time = measure_read_time(input_raster)
     original_file_size = get_file_size(input_raster)
-    original_file_size_percantage = (original_file_size / cog_uncompressed_file_size) * 100
+    compare_size = original_file_size
+    original_read_time = measure_read_time(input_raster)
+    orig_read_time = measure_read_time(input_raster)
+    original_file_size_percantage = (original_file_size / compare_size) * 100
     # Store uncompressed GTiff (Original) file stats
     if "GTiff_uncompressed (Original)" not in compression_stats:
         compression_stats["GTiff_uncompressed (Original)"] = {
             'compression_options': [], 'sizes': [], 'size_percentage': [], 'write_times': [], 'read_times': []}
-    compression_stats["GTiff_uncompressed (Original)"]['sizes'].append(original_size)
+    compression_stats["GTiff_uncompressed (Original)"]['sizes'].append(original_file_size)
     compression_stats["GTiff_uncompressed (Original)"]['read_times'].append(original_read_time)
     compression_stats["GTiff_uncompressed (Original)"]['size_percentage'].append(original_file_size_percantage)
 
-    # Store uncompressed COG file stats
-    if "COG_uncompressed" not in compression_stats:
-        compression_stats["COG_uncompressed"] = {
-            'compression_options': [], 'sizes': [], 'size_percentage': [], 'write_times': [], 'read_times': []}
-    compression_stats["COG_uncompressed"]['sizes'].append(cog_uncompressed_file_size)
-    compression_stats["COG_uncompressed"]['size_percentage'].append(cog_file_size_percantage)
-    compression_stats["COG_uncompressed"]['write_times'].append(cog_write_time)
-    compression_stats["COG_uncompressed"]['read_times'].append(cog_read_time)
-            
+           
     # For each compression method, apply and collect results
     for compression, method_data in compression_methods.items():
         levels = method_data['levels']
@@ -150,19 +131,19 @@ for input_raster in input_rasters:
         if predictor is None:
             # Normal case for compression methods without predictor=2
             for level in levels:
-                cog_output_filename = f"{os.path.splitext(os.path.basename(input_raster))[0]}_{compression}_level{level}_COG.tif"
-                cog_output_file = os.path.join(output_folder, cog_output_filename)
+                tif_output_filename = f"{os.path.splitext(os.path.basename(input_raster))[0]}_{compression}_level{level}.tif"
+                tif_output_file = os.path.join(output_folder, tif_output_filename)
 
                 print(f"Processing: {compression} with Level {level}")
-                cog_write_time = compress_raster(input_raster, cog_output_file, compression, predictor, level)
-                if cog_write_time is None:
+                tif_write_time = compress_raster(input_raster, tif_output_file, compression, predictor, level)
+                if tif_write_time is None:
                     print(f"❌ Skipping {compression} with Level {level} due to failure.")
                     continue
 
-                cog_read_time = measure_read_time(cog_output_file)
-                cog_file_size = get_file_size(cog_output_file)
-                cog_file_size_percantage = (cog_file_size / cog_uncompressed_file_size) * 100
-                print(cog_output_filename+': '+ str(cog_file_size)+', ' +str(cog_file_size_percantage))
+                tif_read_time = measure_read_time(tif_output_file)
+                tif_file_size = get_file_size(tif_output_file)
+                tif_file_size_percantage = (tif_file_size / compare_size) * 100
+                print(tif_output_filename+': '+ str(tif_file_size)+', ' +str(tif_file_size_percantage))
 
                 # Construct a unique key for each combination of method, level, and predictor
                 compression_key = f"{compression}_level{level}_no_predictor"
@@ -175,27 +156,27 @@ for input_raster in input_rasters:
                         compression_stats[compression_key] = {'compression_options': [], 'sizes': [], 'size_percentage': [], 'write_times': [], 'read_times': []}
                     
                 
-                compression_stats[compression_key]['sizes'].append(cog_file_size)
-                compression_stats[compression_key]['size_percentage'].append(cog_file_size_percantage)
-                compression_stats[compression_key]['write_times'].append(cog_write_time)
-                compression_stats[compression_key]['read_times'].append(cog_read_time)
+                compression_stats[compression_key]['sizes'].append(tif_file_size)
+                compression_stats[compression_key]['size_percentage'].append(tif_file_size_percantage)
+                compression_stats[compression_key]['write_times'].append(tif_write_time)
+                compression_stats[compression_key]['read_times'].append(tif_read_time)
 
         # If predictor is 2, run compression twice: once with predictor=2 and once without
         if predictor == 2:
             # Run without predictor (predictor=None)
             for level in levels:
-                cog_output_filename = f"{os.path.splitext(os.path.basename(input_raster))[0]}_{compression}_level{level}_no_predictor_COG.tif"
-                cog_output_file = os.path.join(output_folder, cog_output_filename)
+                tif_output_filename = f"{os.path.splitext(os.path.basename(input_raster))[0]}_{compression}_level{level}_no_predictor.tif"
+                tif_output_file = os.path.join(output_folder, tif_output_filename)
 
                 print(f"Processing: {compression} with Level {level} and No Predictor")
-                cog_write_time = compress_raster(input_raster, cog_output_file, compression, None, level)
-                if cog_write_time is None:
+                tif_write_time = compress_raster(input_raster, tif_output_file, compression, None, level)
+                if tif_write_time is None:
                     print(f"❌ Skipping {compression} with Level {level} and No Predictor due to failure.")
                     continue
 
-                cog_read_time = measure_read_time(cog_output_file)
-                cog_file_size = get_file_size(cog_output_file)
-                cog_file_size_percantage = (cog_file_size / cog_uncompressed_file_size) * 100
+                tif_read_time = measure_read_time(tif_output_file)
+                tif_file_size = get_file_size(tif_output_file)
+                tif_file_size_percantage = (tif_file_size / compare_size) * 100
 
                 # Construct a unique key for each combination of method, level, and predictor
                 compression_key = f"{compression}_level{level}_no_predictor"
@@ -207,25 +188,25 @@ for input_raster in input_rasters:
                     else:
                         compression_stats[compression_key] = {'compression_options': [], 'sizes': [], 'size_percentage': [], 'write_times': [], 'read_times': []}
                 
-                compression_stats[compression_key]['sizes'].append(cog_file_size)
-                compression_stats[compression_key]['size_percentage'].append(cog_file_size_percantage)
-                compression_stats[compression_key]['write_times'].append(cog_write_time)
-                compression_stats[compression_key]['read_times'].append(cog_read_time)
+                compression_stats[compression_key]['sizes'].append(tif_file_size)
+                compression_stats[compression_key]['size_percentage'].append(tif_file_size_percantage)
+                compression_stats[compression_key]['write_times'].append(tif_write_time)
+                compression_stats[compression_key]['read_times'].append(tif_read_time)
             
             # Run with predictor=2
             for level in levels:
-                cog_output_filename = f"{os.path.splitext(os.path.basename(input_raster))[0]}_{compression}_level{level}_predictor2_COG.tif"
-                cog_output_file = os.path.join(output_folder, cog_output_filename)
+                tif_output_filename = f"{os.path.splitext(os.path.basename(input_raster))[0]}_{compression}_level{level}_predictor2.tif"
+                tif_output_file = os.path.join(output_folder, tif_output_filename)
 
                 print(f"Processing: {compression} with Level {level} and Predictor 2")
-                cog_write_time = compress_raster(input_raster, cog_output_file, compression, 2, level)
-                if cog_write_time is None:
+                tif_write_time = compress_raster(input_raster, tif_output_file, compression, 2, level)
+                if tif_write_time is None:
                     print(f"❌ Skipping {compression} with Level {level} and Predictor 2 due to failure.")
                     continue
 
-                cog_read_time = measure_read_time(cog_output_file)
-                cog_file_size = get_file_size(cog_output_file)
-                cog_file_size_percantage = (cog_file_size/cog_uncompressed_file_size) * 100
+                tif_read_time = measure_read_time(tif_output_file)
+                tif_file_size = get_file_size(tif_output_file)
+                tif_file_size_percantage = (tif_file_size/compare_size) * 100
 
                 # Construct a unique key for each combination of method, level, and predictor
                 compression_key = f"{compression}_level{level}_predictor2"
@@ -237,48 +218,17 @@ for input_raster in input_rasters:
                     else:
                         compression_stats[compression_key] = {'compression_options': [f"-co PREDICTOR={predictor}"], 'sizes': [], 'size_percentage': [], 'write_times': [], 'read_times': []}
                                 
-                compression_stats[compression_key]['sizes'].append(cog_file_size)
-                compression_stats[compression_key]['size_percentage'].append(cog_file_size_percantage)
-                compression_stats[compression_key]['write_times'].append(cog_write_time)
-                compression_stats[compression_key]['read_times'].append(cog_read_time)
+                compression_stats[compression_key]['sizes'].append(tif_file_size)
+                compression_stats[compression_key]['size_percentage'].append(tif_file_size_percantage)
+                compression_stats[compression_key]['write_times'].append(tif_write_time)
+                compression_stats[compression_key]['read_times'].append(tif_read_time)
         
-        # else:
-        #     # Normal case for compression methods without predictor=2
-        #     for level in levels:
-        #         cog_output_filename = f"{os.path.splitext(os.path.basename(input_raster))[0]}_{compression}_level{level}_COG.tif"
-        #         cog_output_file = os.path.join(output_folder, cog_output_filename)
-
-        #         print(f"Processing: {compression} with Level {level}")
-        #         cog_write_time = compress_raster(input_raster, cog_output_file, compression, predictor, level)
-        #         if cog_write_time is None:
-                    
-        #             (f"❌ Skipping {compression} with Level {level} due to failure.")
-        #             continue
-
-        #         cog_read_time = measure_read_time(cog_output_file)
-        #         cog_file_size = get_file_size(cog_output_file)
-        #         cog_file_size_percantage = (cog_file_size / cog_uncompressed_file_size) * 100
-        #         print(cog_file_size_percantage)
-
-        #         # Construct a unique key for each combination of method, level, and predictor
-        #         compression_key = f"{compression}_level{level}_no_predictor"
-
-        #         # Store the statistics for later averaging
-        #         if level is not None:
-        #             compression_stats[compression_key] = {'compression_options': [f"-co ZLEVEL={level}"], 'sizes': [], 'size_percentage': [], 'write_times': [], 'read_times': []}
-        #         else:
-        #             compression_stats[compression_key] = {'compression_options': [], 'sizes': [], 'size_percentage': [], 'write_times': [], 'read_times': []}
-                
-        #         compression_stats[compression_key]['sizes'].append(cog_file_size)
-        #         compression_stats[compression_key]['size_percentage'].append(cog_file_size_percantage)
-        #         compression_stats[compression_key]['write_times'].append(cog_write_time)
-        #         compression_stats[compression_key]['read_times'].append(cog_read_time)
 
 print(compression_stats)
 
 # Calculate averages and standard deviations
 summary_stats = {}
-# uncompressed_cog_size = compression_stats["COG_uncompressed"]['sizes'][0]  # Uncompressed COG size for percentage calculation
+# uncompressed_tif_size = compression_stats["tif_uncompressed"]['sizes'][0]  # Uncompressed tif size for percentage calculation
 
 for comp, stats in compression_stats.items():
     compression_options = '' if stats['compression_options'] == [] else stats['compression_options'][0]
@@ -308,14 +258,14 @@ for comp, stats in compression_stats.items():
 # Writing results to markdown file
 with open(output_md, 'w') as md_file:
     # Write the header for the Markdown table
-    md_file.write("| Method                     | Compression Options | Mean Size (MB) ± StdDev | Size Compared to Uncompressed COG (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |\n")
+    md_file.write("| Method                     | Compression Options | Mean Size (MB) ± StdDev | Size Compared to Original (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |\n")
     md_file.write("|----------------------------|---------------------|-------------------------|-----------------------------------------------|-----------------------------|----------------------------|\n")
     
     # Iterate through the summary statistics and write each method's results
     for comp, stats in summary_stats.items():
    
         # Extract the statistics for each compression method
-        if comp in ['GTiff_uncompressed (Original)', 'COG_uncompressed']:
+        if comp in ['GTiff_uncompressed (Original)', 'tif_uncompressed']:
             comp=comp
         elif comp in ['LERC_DEFLATE_levelNone_no_predictor','LERC_ZSTD_levelNone_no_predictor']:
             comp = '_'.join(comp.split('_')[:2])
