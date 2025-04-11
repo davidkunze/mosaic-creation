@@ -36,8 +36,8 @@ import statistics
 from osgeo import gdal
 
 # Directories for input and output files
-input_folder = r'D:\Test\test_compression_2\daten\8bit'
-output_folder = r'D:\Test\test_compression_2\results\8bit'  # Output directory for results
+input_folder = r'D:\Test\test_compression\daten'
+output_folder = r'D:\Test\test_compression\results'  # Output directory for results
 output_md = os.path.join(output_folder, "results.md")  # Markdown output file
 
 # Scan for input raster files
@@ -258,8 +258,8 @@ for comp, stats in compression_stats.items():
 # Writing results to markdown file
 with open(output_md, 'w') as md_file:
     # Write the header for the Markdown table
-    md_file.write("| Method                     | Compression Options | Mean Size (MB) ± StdDev | Size Compared to Original (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |\n")
-    md_file.write("|----------------------------|---------------------|-------------------------|-----------------------------------------------|-----------------------------|----------------------------|\n")
+    md_file.write("| Method                     | Compression Options                | Mean Size (MB) ± StdDev | Size Compared to Original (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |\n")
+    md_file.write("|----------------------------|------------------------------------|-------------------------|-----------------------------------------------|-----------------------------|----------------------------|\n")
     
     # Iterate through the summary statistics and write each method's results
     for comp, stats in summary_stats.items():
@@ -267,7 +267,7 @@ with open(output_md, 'w') as md_file:
         # Extract the statistics for each compression method
         if comp in ['GTiff_uncompressed (Original)', 'tif_uncompressed']:
             comp=comp
-        elif comp in ['LERC_DEFLATE_levelNone_no_predictor','LERC_ZSTD_levelNone_no_predictor']:
+        elif comp.startswith(('LERC_DEFLATE','LERC_ZSTD')):
             comp = '_'.join(comp.split('_')[:2])
         else:
             comp = comp.split('_')[0]   
@@ -284,5 +284,4 @@ with open(output_md, 'w') as md_file:
               
         # Write the statistics to the markdown table
         md_file.write(f"| {comp:<26} | {compression_options:<19} | {mean_size:.2f} ± {std_size:.2f} | {size_percentage:.2f} ± {std_percentage:.2f}  | {mean_write_time:.2f} ± {std_write_time:.2f} | {mean_read_time:.2f} ± {std_read_time:.2f} |\n")
-
 ```
