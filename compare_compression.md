@@ -1,4 +1,4 @@
-# Comparison of raster compression methods 
+# Comparison of lossless raster compression methods 
 
 Input data:
 - format: uncompressed GTiffs
