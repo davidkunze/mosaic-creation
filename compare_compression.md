@@ -7,7 +7,35 @@ Input data:
 - type: 8 bit
 - spatial resolution: 0.2 m
 
-# Ourput Format: COG ( CLoud Optimized Geotiff)
+# Output Format: GTiff
+
+| Method                     | Compression Options | Mean Size (MB) ± StdDev | Size Compared to Original (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |
+|----------------------------|---------------------|-------------------------|-----------------------------------------------|-----------------------------|----------------------------|
+| GTiff_uncompressed (Original) |                     | 400.01 ± 0.00 | 100.00 ± 0.00  | 0.00 ± 0.00 | 1.95 ± 0.11 |
+| LZW                        |                     | 435.80 ± 11.11 | 108.95 ± 2.78  | 5.35 ± 0.61 | 2.02 ± 0.22 |
+| LZW                        | -co PREDICTOR=2     | 286.12 ± 14.42 | 71.53 ± 3.61  | 5.48 ± 0.38 | 1.96 ± 0.11 |
+| DEFLATE                    | -co ZLEVEL=1        | 340.94 ± 3.45 | 85.23 ± 0.86  | 3.74 ± 0.28 | 1.21 ± 0.27 |
+| DEFLATE                    | -co ZLEVEL=6        | 333.64 ± 4.90 | 83.41 ± 1.23  | 5.53 ± 0.42 | 1.20 ± 0.06 |
+| DEFLATE                    | -co ZLEVEL=9        | 332.28 ± 5.62 | 83.07 ± 1.41  | 11.31 ± 1.02 | 1.17 ± 0.06 |
+| DEFLATE                    | -co ZLEVEL=1 -co PREDICTOR=2 | 253.05 ± 10.20 | 63.26 ± 2.55  | 3.84 ± 0.12 | 1.28 ± 0.06 |
+| DEFLATE                    | -co ZLEVEL=6 -co PREDICTOR=2 | 250.67 ± 9.29 | 62.67 ± 2.32  | 6.97 ± 0.63 | 1.39 ± 0.06 |
+| DEFLATE                    | -co ZLEVEL=9 -co PREDICTOR=2 | 244.01 ± 9.99 | 61.00 ± 2.50  | 20.30 ± 2.86 | 1.47 ± 0.07 |
+| ZSTD                       | -co ZLEVEL=1        | 344.99 ± 2.65 | 86.25 ± 0.66  | 1.30 ± 0.07 | 0.77 ± 0.04 |
+| ZSTD                       | -co ZLEVEL=9        | 344.78 ± 2.46 | 86.19 ± 0.62  | 2.06 ± 0.45 | 0.79 ± 0.04 |
+| ZSTD                       | -co ZLEVEL=22       | 334.87 ± 5.60 | 83.72 ± 1.40  | 139.51 ± 12.38 | 0.98 ± 0.05 |
+| ZSTD                       | -co ZLEVEL=1 -co PREDICTOR=2 | 269.17 ± 10.12 | 67.29 ± 2.53  | 1.43 ± 0.07 | 0.73 ± 0.04 |
+| ZSTD                       | -co ZLEVEL=9 -co PREDICTOR=2 | 263.40 ± 11.71 | 65.85 ± 2.93  | 8.26 ± 0.53 | 0.88 ± 0.02 |
+| ZSTD                       | -co ZLEVEL=22 -co PREDICTOR=2 | 242.91 ± 10.35 | 60.73 ± 2.59  | 145.91 ± 12.11 | 1.50 ± 0.05 |
+| LZMA                       | -co ZLEVEL=1        | 271.26 ± 7.11 | 67.81 ± 1.78  | 78.91 ± 6.65 | 16.01 ± 0.76 |
+| LZMA                       | -co ZLEVEL=6        | 271.26 ± 7.11 | 67.81 ± 1.78  | 79.14 ± 4.64 | 15.92 ± 0.71 |
+| LZMA                       | -co ZLEVEL=9        | 271.26 ± 7.11 | 67.81 ± 1.78  | 77.58 ± 6.60 | 15.94 ± 1.05 |
+| PACKBITS                   |                     | 384.48 ± 0.03 | 96.12 ± 0.01  | 2.07 ± 0.17 | 0.35 ± 0.04 |
+| LERC                       |                     | 271.04 ± 10.07 | 67.76 ± 2.52  | 7.89 ± 0.58 | 2.65 ± 0.18 |
+| LERC_DEFLATE               |                     | 271.13 ± 10.10 | 67.78 ± 2.52  | 10.57 ± 1.03 | 2.86 ± 0.31 |
+| LERC_ZSTD                  |                     | 271.14 ± 10.07 | 67.78 ± 2.52  | 8.60 ± 0.82 | 2.76 ± 0.33 |
+
+
+# Output Format: COG ( CLoud Optimized Geotiff)
 
 | Method                     | Compression Options | Mean Size (MB) ± StdDev | Size Compared to uncompressed COG (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |
 |----------------------------|---------------------|-------------------------|-----------------------------------------------|-----------------------------|----------------------------|
