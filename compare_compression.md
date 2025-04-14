@@ -1,13 +1,14 @@
 # Comparison of raster compression methods 
 
 Input data:
-- six Geotiff tiles
-- extent: 2000 x 2000 m
+- format: uncompressed GTiffs
+- number of input tiles: 6
+- tile size: 2000 x 2000 m
 - type: 8 bit
-- resolution: 0.2 m 
+- spatial resolution: 0.2 m
 
+# Ourput Format: COG ( CLoud Optimized Geotiff)
 
-# Output Format: Cloud Optimized Geotiff (COG)
 | Method                     | Compression Options | Mean Size (MB) ± StdDev | Size Compared to uncompressed COG (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |
 |----------------------------|---------------------|-------------------------|-----------------------------------------------|-----------------------------|----------------------------|
 | GTiff_uncompressed (Original) |                     | 400.01 ± 0.00 | 70.36 ± 2.11  | 0.00 ± 0.00 | 0.26 ± 0.06 |
