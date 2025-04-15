@@ -15,17 +15,17 @@ gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'D:\Test\test_compression\daten'
+path_data = r'Z:\fernerkundung\luftbild\ni\flugzeug\2007\badessen_sgb4_kyrill_TEST\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2023_harz_np_dop'
+tile_name = 'ni_flugzeug_2007_badessen_sgb4_kyrill_dop'
 
 vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
 # if nodata-value is "nodata" use empty string ''
-nodata_value = '255' 
+nodata_value = '' 
 
 in_srs_specified = 25832 #in some cases, the coordinate system does not apper GDAL-readable, in such cases, specify coordinate system 
 out_srs = 25832 #EPSG-code of output projection
@@ -119,7 +119,16 @@ if not in_srs in [str(out_srs)]:
         subprocess.run(gdalwarpString)
         ogr2ogrString = 'ogr2ogr -f "GPKG" -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
         subprocess.run(ogr2ogrString)
-        print("in_srs is NONE")  
+        print("in_srs is NONE")
+    if in_srs == '4314':
+        # direct projection from 4314 to 25832 is defective, therefore the projection 31476 is used as in_srs
+        in_srs = 31467
+        gdalwarpString = 'gdalwarp -of VRT -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + vrt_temp + ' ' + vrt_temp_proj
+        subprocess.run(gdalwarpString)
+        print('gdalwarpString: ' + gdalwarpString)
+        ogr2ogrString = 'ogr2ogr -f "GPKG" -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
+        subprocess.run(ogr2ogrString)
+        print("in_srs is 4314")    
     else:
         gdalwarpString = 'gdalwarp -of VRT -t_srs EPSG:' + str(out_srs) + ' ' + vrt_temp + ' ' + vrt_temp_proj
         subprocess.run(gdalwarpString)
