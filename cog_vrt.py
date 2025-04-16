@@ -15,7 +15,7 @@ gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'Z:\fernerkundung\luftbild\ni\flugzeug\2007\badessen_sgb4_kyrill_TEST\daten'
+path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2007\badessen_sgb4_kyrill_test\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
@@ -25,7 +25,7 @@ tile_name = 'ni_flugzeug_2007_badessen_sgb4_kyrill_dop'
 vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
 # if nodata-value is "nodata" use empty string ''
-nodata_value = '' 
+nodata_value = '0' 
 
 in_srs_specified = 25832 #in some cases, the coordinate system does not apper GDAL-readable, in such cases, specify coordinate system 
 out_srs = 25832 #EPSG-code of output projection
@@ -97,7 +97,7 @@ else:
         i += 1
     buildvrtString = 'gdalbuildvrt -srcnodata "' + ' '.join(nodata_list) + '" -overwrite -input_file_list '+ input_list_txt + ' ' + vrt_temp
     subprocess.run(buildvrtString)
-    print('nodata is existing:'+nodata_value)
+    print('nodata is existing: '+nodata_value)
 
 
 # get input data extent to check which output tiles contain data
