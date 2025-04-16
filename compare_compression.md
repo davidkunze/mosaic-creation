@@ -4,10 +4,9 @@ Input data:
 - format: uncompressed GTiffs
 - number of input tiles: 6
 - tile size: 2000 x 2000 m
-- type: 8 bit
 - spatial resolution: 0.2 m
 
-# Output Format: GTiff
+# Output Format: GTiff - 8 Bit
 
 | Method                     | Compression Options | Mean Size (MB) ± StdDev | Size Compared to Original (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |
 |----------------------------|---------------------|-------------------------|-----------------------------------------------|-----------------------------|----------------------------|
@@ -35,7 +34,7 @@ Input data:
 | LERC_ZSTD                  |                     | 271.14 ± 10.07 | 67.78 ± 2.52  | 8.60 ± 0.82 | 2.76 ± 0.33 |
 
 
-# Output Format: COG ( CLoud Optimized Geotiff)
+# Output Format: COG (CLoud Optimized Geotiff) - 8 Bit
 
 | Method                     | Compression Options | Mean Size (MB) ± StdDev | Size Compared to uncompressed COG (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |
 |----------------------------|---------------------|-------------------------|-----------------------------------------------|-----------------------------|----------------------------|
