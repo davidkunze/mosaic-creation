@@ -3,7 +3,7 @@
 Input data:
 - format: uncompressed GTiffs
 - number of input tiles: 6
-- same rasters tested with 8 bit unsigned integer and 16 bit unsigned integer
+- data type: same rasters tested with 8 bit unsigned integer and 16 bit unsigned integer
 - tile size: 2000 x 2000 m
 - spatial resolution: 0.2 m
 
