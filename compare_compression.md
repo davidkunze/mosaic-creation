@@ -3,10 +3,11 @@
 Input data:
 - format: uncompressed GTiffs
 - number of input tiles: 6
+- same rasters tested with 8 bit unsigned integer and 16 bit unsigned integer
 - tile size: 2000 x 2000 m
 - spatial resolution: 0.2 m
 
-# Output Format: GTiff - 8 Bit
+# Output Format: GTiff - 8 Bit unsigned integer
 
 | Method                     | Compression Options | Mean Size (MB) ± StdDev | Size Compared to Original (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |
 |----------------------------|---------------------|-------------------------|-----------------------------------------------|-----------------------------|----------------------------|
@@ -33,8 +34,34 @@ Input data:
 | LERC_DEFLATE               |                     | 271.13 ± 10.10 | 67.78 ± 2.52  | 10.57 ± 1.03 | 2.86 ± 0.31 |
 | LERC_ZSTD                  |                     | 271.14 ± 10.07 | 67.78 ± 2.52  | 8.60 ± 0.82 | 2.76 ± 0.33 |
 
+# Output Format: GTiff - 16 Bit unsigned integer
 
-# Output Format: COG (CLoud Optimized Geotiff) - 8 Bit
+| Method                     | Compression Options | Mean Size (MB) ± StdDev | Size Compared to Original (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |
+|----------------------------|---------------------|-------------------------|-----------------------------------------------|-----------------------------|----------------------------|
+| GTiff_uncompressed (Original) |                     | 800.00 ± 0.00 | 100.00 ± 0.00  | 0.00 ± 0.00 | 4.09 ± 1.60 |
+| LZW                        |                     | 1024.87 ± 2.65 | 128.11 ± 0.33  | 9.20 ± 0.19 | 6.62 ± 0.20 |
+| LZW                        | -co PREDICTOR=2     | 971.56 ± 11.73 | 121.44 ± 1.47  | 11.36 ± 0.23 | 7.11 ± 0.27 |
+| DEFLATE                    | -co ZLEVEL=1        | 748.31 ± 1.45 | 93.54 ± 0.18  | 7.78 ± 0.11 | 5.38 ± 0.15 |
+| DEFLATE                    | -co ZLEVEL=6        | 745.87 ± 1.88 | 93.23 ± 0.23  | 10.07 ± 0.11 | 5.39 ± 0.09 |
+| DEFLATE                    | -co ZLEVEL=9        | 745.09 ± 1.93 | 93.14 ± 0.24  | 20.14 ± 0.22 | 5.33 ± 0.10 |
+| DEFLATE                    | -co ZLEVEL=1 -co PREDICTOR=2 | 703.12 ± 6.62 | 87.89 ± 0.83  | 7.85 ± 0.13 | 5.58 ± 0.14 |
+| DEFLATE                    | -co ZLEVEL=6 -co PREDICTOR=2 | 703.46 ± 6.39 | 87.93 ± 0.80  | 10.34 ± 0.09 | 5.61 ± 0.07 |
+| DEFLATE                    | -co ZLEVEL=9 -co PREDICTOR=2 | 702.73 ± 6.52 | 87.84 ± 0.82  | 21.33 ± 0.32 | 5.49 ± 0.11 |
+| ZSTD                       | -co ZLEVEL=1        | 754.15 ± 4.23 | 94.27 ± 0.53  | 2.30 ± 0.25 | 4.61 ± 0.29 |
+| ZSTD                       | -co ZLEVEL=9        | 754.15 ± 4.22 | 94.27 ± 0.53  | 2.96 ± 0.35 | 4.50 ± 0.28 |
+| ZSTD                       | -co ZLEVEL=22       | 752.93 ± 4.13 | 94.12 ± 0.52  | 206.25 ± 3.62 | 4.49 ± 0.19 |
+| ZSTD                       | -co ZLEVEL=1 -co PREDICTOR=2 | 702.95 ± 6.60 | 87.87 ± 0.83  | 2.70 ± 0.10 | 4.99 ± 0.09 |
+| ZSTD                       | -co ZLEVEL=9 -co PREDICTOR=2 | 702.95 ± 6.60 | 87.87 ± 0.83  | 3.39 ± 0.21 | 5.11 ± 0.18 |
+| ZSTD                       | -co ZLEVEL=22 -co PREDICTOR=2 | 702.46 ± 7.20 | 87.81 ± 0.90  | 221.44 ± 14.93 | 5.22 ± 0.07 |
+| LZMA                       | -co ZLEVEL=1        | 750.38 ± 4.21 | 93.80 ± 0.53  | 133.26 ± 2.66 | 41.60 ± 0.20 |
+| LZMA                       | -co ZLEVEL=6        | 750.38 ± 4.21 | 93.80 ± 0.53  | 135.80 ± 4.50 | 41.60 ± 0.35 |
+| LZMA                       | -co ZLEVEL=9        | 750.38 ± 4.21 | 93.80 ± 0.53  | 135.06 ± 5.41 | 41.69 ± 0.17 |
+| PACKBITS                   |                     | 768.97 ± 0.00 | 96.12 ± 0.00  | 3.87 ± 0.05 | 3.95 ± 0.07 |
+| LERC                       |                     | 763.85 ± 0.00 | 95.48 ± 0.00  | 5.06 ± 0.17 | 4.79 ± 0.54 |
+| LERC_DEFLATE               |                     | 746.58 ± 1.88 | 93.32 ± 0.23  | 13.66 ± 0.14 | 5.90 ± 0.10 |
+| LERC_ZSTD                  |                     | 754.90 ± 4.24 | 94.36 ± 0.53  | 6.30 ± 0.11 | 4.95 ± 0.27 |
+
+# Output Format: COG (CLoud Optimized Geotiff) - 8 Bit unsigned integer
 
 | Method                     | Compression Options | Mean Size (MB) ± StdDev | Size Compared to uncompressed COG (%) ± StdDev | Mean Write Time (s) ± StdDev | Mean Read Time (s) ± StdDev |
 |----------------------------|---------------------|-------------------------|-----------------------------------------------|-----------------------------|----------------------------|
