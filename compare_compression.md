@@ -82,7 +82,7 @@ output_folder = r'D:\Test\test_compression_2\results\8bit'  # Output directory f
 input_rasters = glob.glob(os.path.join(input_folder, '*.tif'))
 
 # Output format
-output_format = 'GTiff '  # Output format for gdal_translate, shoose between 'GTiff' or 'COG'
+output_format = 'GTiff'  # Output format for gdal_translate, shoose between 'GTiff' or 'COG'
 output_md = os.path.join(output_folder, f"results_{output_format}.md")  # Markdown output file
 
 # Compression methods with levels and predictors
