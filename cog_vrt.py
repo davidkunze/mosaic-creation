@@ -15,12 +15,12 @@ gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2007\badessen_sgb4_kyrill_test\daten'
+path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2024\harsefeld_nlf_fe\dop\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2007_badessen_sgb4_kyrill_dop'
+tile_name = 'ni_flugzeug_2024_harsefeld_nlf_fe_dop'
 
 vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
@@ -313,7 +313,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
         comp = 'ZSTD'
     
     if not os.path.isfile(output): #calculate file just if it exists
-        gdaltranString = 'gdal_translate -q -of COG -co COMPRESS='+comp+' -co PREDICTOR=2 -r '+resamp_method+' -a_srs EPSG:' + str(out_srs) + ' ' + bands + ' -tr ' + str(x_res) + ' ' + str(y_res) + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output
+        gdaltranString = 'gdal_translate -q -of COG -a_nodata '+nodata_value+' -co COMPRESS='+comp+' -co PREDICTOR=2 -r '+resamp_method+' -a_srs EPSG:' + str(out_srs) + ' ' + bands + ' -tr ' + str(x_res) + ' ' + str(y_res) + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output
         subprocess.run(gdaltranString)
     # create polygon from data extent
     footprint = os.path.join(dir_footprint, output_name + ".gpkg")
@@ -337,7 +337,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
 # create 2x2 km cog tiles from temporary vrt that was created from input data  
 if __name__ == '__main__':
     count = mp.cpu_count()
-    pool = mp.Pool(count-3)
+    pool = mp.Pool(count-58)
     args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres) for x in tiles]
     pool.starmap(tiling, args)
     pool.close()
