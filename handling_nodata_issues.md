@@ -1,5 +1,10 @@
-Pixels that contain the nodata value in a band are incorrectly regarded as nodata pixels and are displayed transparently in most GIS systems.
-example: cir aerial image with OSM in backgroud, nodata value: 254
+Pixels that contain the nodata value in one band are incorrectly regarded as nodata pixels and are displayed transparently in most GIS systems. 
+example: 
+- cir aerial image with OSM in backgroud
+- nodata value: 254
+- true nodata pixel: CIR 254-254-254
+- example for incorrectly regarded nodata pixel: CIR 254-188-211
+
 ![grafik](https://github.com/user-attachments/assets/16ed7fb1-c4d3-429c-b58b-500ab0200238)
 
 
