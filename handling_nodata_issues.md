@@ -9,8 +9,8 @@ example: cir aerial image with OSM in backgroud, nodata value: 254
 from osgeo import gdal
 import numpy as np
 
-input_path = r"\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2006\harz_np\dop\daten\ni_flugzeug_2006_harz_np_dop.vrt" 
-output_path = r"\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2006\harz_np\dop\daten\mask_254_254_254_2.tif"
+input_path = r"daten\example.vrt" 
+output_path = r"daten\mask_254_254_254_2.tif"
 
 dataset = gdal.Open(input_path)
 driver = gdal.GetDriverByName("GTiff")
