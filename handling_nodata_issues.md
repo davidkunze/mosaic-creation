@@ -58,4 +58,4 @@ example:
   
 ![grafik](https://github.com/user-attachments/assets/6a9ef1cc-67ef-4f4e-be95-38e72e74b8b9)![grafik](https://github.com/user-attachments/assets/dbd1570a-4122-45d3-ade6-92bb05460014)
 
-
+4. final mask can be used to filter/clip raw data
