@@ -1,6 +1,6 @@
 # Incorrect Detection As Nodata Pixels
 
-Pixels that contain the nodata value in one band are incorrectly detected as nodata pixels and are displayed transparently in most GIS systems. 
+Pixels that contain the nodata value in one band are incorrectly detected as nodata pixels and are displayed transparently in QGIS/ArcGIS. 
 
 Example: 
 - cir aerial image with OSM in backgroud
