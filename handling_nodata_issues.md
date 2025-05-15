@@ -15,7 +15,6 @@ output_path = r"\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2006\har
 dataset = gdal.Open(input_path)
 driver = gdal.GetDriverByName("GTiff")
 
-# Create output raster
 out_ds = driver.Create(
     output_path,
     dataset.RasterXSize,
@@ -27,7 +26,6 @@ out_ds = driver.Create(
 out_ds.SetGeoTransform(dataset.GetGeoTransform())
 out_ds.SetProjection(dataset.GetProjection())
 
-# Define tile size
 block_size = 1024
 
 for y in range(0, dataset.RasterYSize, block_size):
@@ -35,15 +33,11 @@ for y in range(0, dataset.RasterYSize, block_size):
     for x in range(0, dataset.RasterXSize, block_size):
         cols = min(block_size, dataset.RasterXSize - x)
 
-        # Read the window from each band
         r = dataset.GetRasterBand(1).ReadAsArray(x, y, cols, rows)
         g = dataset.GetRasterBand(2).ReadAsArray(x, y, cols, rows)
         b = dataset.GetRasterBand(3).ReadAsArray(x, y, cols, rows)
 
-        # Build the mask
         mask = ((r == 254) & (g == 254) & (b == 254)).astype(np.uint8)
-
-        # Write to output
         out_ds.GetRasterBand(1).WriteArray(mask, x, y)
 
 print(f"Mask saved to {output_path}")
@@ -61,5 +55,7 @@ example:
 - multipart to singlepart:
 - remove outside nodata polygon
 - dissolve remaining polygons
-- 
-![grafik](https://github.com/user-attachments/assets/6a9ef1cc-67ef-4f4e-be95-38e72e74b8b9)
+  
+![grafik](https://github.com/user-attachments/assets/6a9ef1cc-67ef-4f4e-be95-38e72e74b8b9)![grafik](https://github.com/user-attachments/assets/dbd1570a-4122-45d3-ade6-92bb05460014)
+
+
