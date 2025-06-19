@@ -15,7 +15,7 @@ gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2009\harz_np\dop\daten'
+path_data = r'\\lb-srv\LB-Z-Temp\David\vrt_cog\testdaten\test_nodata_clip\dop\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
@@ -48,17 +48,19 @@ dir_vrt = os.path.join(path_data,vrt_folder)
 dir_footprint = os.path.join(path_out,footprint_folder)
 
 
-#get all files from dictionary and subdictionary
-formats = ['*.tif','*.jgp','*.png','*.img']
+
+formats = ['*.tif', '*.jpg', '*.png', '*.img', '*.ovr']
 path_data = pathlib.Path(path_data)
-input_windows_path = []
-for x in formats:
-    input_windows_path.extend(path_data.rglob(x))
-#transform windows path to string
-input_data = []
-for x in input_windows_path:
-    if cog_folder not in os.path.dirname(x): #prevents calculated tiles from being used as input data
-        input_data.append(str(x))
+
+# Collect all files matching the formats
+input_windows_path = [p for pattern in formats for p in path_data.rglob(pattern)]
+
+# Filter and convert to strings
+input_data = [
+    str(p)
+    for p in input_windows_path
+    if cog_folder not in p.parent.as_posix()
+]
 
 
 # create temporary vrt from raw data
@@ -345,6 +347,7 @@ if __name__ == '__main__':
     args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres) for x in tiles]
     pool.starmap(tiling, args)
     pool.close()
+    pool.join()
 
     # create extent vector layer which contains following three layers
     #   outline of complete dataset

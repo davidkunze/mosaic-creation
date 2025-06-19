@@ -39,6 +39,16 @@ def clip_nodata(input, nodata_value, vrt_data_path):
     if input.endswith('.ovr'):
         base_file = f"{input.split('.')[0]}.{input.split('.')[1]}"
         dataset = gdal.Open(base_file) # Open the base file of overview to read the geotransform and projection
+        # if basefile.endswith('.vrt') and vrt_data_path:
+        #     vrt_files = collect_files(vrt_data_path, formats=['*.tif', '*.jpg', '*.png', '*.img'])
+        #     input_data_str = '\n'.join(vrt_files)
+        #     input_list_txt = base_file.replace('.vrt', 'input_list.txt')
+        #     with open(input_list_txt, 'w') as file:
+        #         file.write(input_data_str)
+        #         file.close()
+        #     gdalBuildVRTString = f'gdalbuildvrt -overwrite -input_file_list {rename} {base_file}'
+        #     subprocess.run(gdalBuildVRTString)
+        #     remove_file = input_list_txt
     else:
         dataset = gdal.Open(rename)
     

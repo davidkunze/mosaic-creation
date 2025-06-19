@@ -17,12 +17,12 @@ gdal.UseExceptions()
 
 start_time = time.time()
 
-path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2009\harz_np\dop\daten\kacheln'
+path_data = r'Y:\David\vrt_cog\testdaten\bobenwald_sgb3\dop\daten\kacheln'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2009_harz_np_nlf_dop'
+tile_name = 'ni_flugzeug_2020_bobenwald_sgb3_dop'
 # naming scheme for vrt: bundesland_tragersystem_jahr_gebiet_datentyp_auftrageber
     # similar to folder structure see "Z:\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\neustrukturierung_laufwerk_fernerkundung\Übersicht_Neustrukturierung_Laufwerke_nach_BL_Trägersystem_Jahr_Gebiet_20240130.docx"
 
