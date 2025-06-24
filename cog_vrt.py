@@ -15,17 +15,17 @@ gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-srv\LB-Z-Temp\David\vrt_cog\testdaten\test_nodata_clip\dop\daten'
+path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2009_harz_np_dop'
+tile_name = 'he_flugzeug_2020_muenzenberg_sgb2_dop'
 
 vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
 # if nodata-value is "nodata" use empty string ''
-nodata_value = '0' 
+nodata_value = '65535' 
 
 in_srs_specified = 25832 #in some cases, the coordinate system does not apper GDAL-readable, in such cases, specify coordinate system 
 out_srs = 25832 #EPSG-code of output projection
@@ -343,172 +343,172 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
 # create 2x2 km cog tiles from temporary vrt that was created from input data  
 if __name__ == '__main__':
     count = mp.cpu_count()
-    pool = mp.Pool(count-count+4)
+    pool = mp.Pool(count-count+8)
     args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres) for x in tiles]
     pool.starmap(tiling, args)
     pool.close()
     pool.join()
 
-    # create extent vector layer which contains following three layers
-    #   outline of complete dataset
-    #   outline of each tile
-    #   all 2x2 km tiles which contain data
-    vector_data = glob(os.path.join(dir_footprint, '*000.gpkg'))
-    tiles_valid = []
-    for x in vector_data:
-        df = geopandas.read_file(x, layer='contour')
-        tif_path = os.path.join(dir_cog, os.path.basename(x)[:-5]+'.tif')
-        # remove empty vector tiles, raster tiles
-        if df.empty:
-            os.remove(x)
-            os.remove(tif_path)
-        else:
-            if 'location' not in df:
-                df.insert(1, 'location', tif_path)
-            tiles_valid.append(df)
-    extent = os.path.join(dir_footprint, tile_name+'_extent.gpkg')
-
-    # merge all tile outlines 
-    df_merged = pandas.concat(tiles_valid)
-    df_merged['geometry'] = df_merged['geometry'].make_valid()
-    df_merged.to_file(extent, layer='footprint_outline', driver="GPKG")
-    # dissolve tile outlines to dataset outline
-    df_outline = df_merged.dissolve(by='ID')
-    df_outline['location'] = os.path.join(path_data, vrt_name + '.vrt')
-    df_outline['geometry'] =df_outline['geometry'].make_valid()
-    df_outline.to_file(extent, layer='outline', driver="GPKG")
-    # get all 2x2 km tiles which contain data
-    gdalindex_string = 'gdaltindex -tileindex location -lyr_name footprints ' + extent + ' ' + os.path.join(dir_cog) + '/*.tif'
-    subprocess.run(gdalindex_string)
-
-    # read metadaten files
-    metadata = glob(os.path.join(path_meta, '*.csv'))
-    metadata = pandas.read_csv(metadata[0], sep='\r\n', skip_blank_lines=True, header=None, encoding='utf-8', engine='python')
-    metadata = metadata.values.flatten().tolist()
-
-    # add metadata to vector tiles
-    def insert_medata(file):
-        layers = fiona.listlayers(file)
-        for table in layers:
-            dataframe = geopandas.read_file(file, layer=table)
-            for x in metadata:
-                x = x.rstrip()
-                if ';' in x:
-                    y = x.split(';')
-                    column = y[0]
-                    value = y[1]
-                    dataframe.insert(len(dataframe.columns), column, '') #add column to dataframe
-                    dataframe[column] = value  #fill coulumn
-            index = dataframe.columns.get_loc('datum_bildflug_von') #get column position
-            dataframe.insert(index, 'bildflug_jahr', '')  # add column to dataframe
-            dataframe['bildflug_jahr'] = dataframe['datum_bildflug_von'].str.split('-')[0][0]  # fill coulumn
-            # if table != 'outline':
-            index = dataframe.columns.get_loc('location')
-            dataframe.insert(index, 'path', '')  # add column to dataframe
-            dataframe['path'] = dataframe.apply(lambda row: '/'.join(row.location.split('\\')[5:]), axis = 1)
-            dataframe.drop(['location'],axis=1,inplace=True)
-            dataframe.loc[dataframe['epsg']!= str(out_srs),'epsg'] = str(out_srs)
-            if 'ID' in dataframe.columns:
-                dataframe.drop(['ID'],axis=1,inplace=True)
-            dataframe.to_file(file, layer=table, driver="GPKG")
-
-    insert_medata(extent)
-
-
-    # build vrt from cog tiles
-    dir_cog = pathlib.Path(dir_cog)
-    input_windows_path = dir_cog.rglob("*.tif")
-    tif = []
-    for x in input_windows_path:
-        tif.append(str(x))
-    tile_sample = tif[0]
-    tif= '\n'.join(tif)
-
-    with open(input_list_txt, 'w') as file:
-        file.write(tif)
-        file.close()
-    vrt = os.path.join(path_data, vrt_name + '.vrt')
-    try:
-        nodata_list #check if nodata list exists
-    except NameError:
-        buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
-    else:
-        # if nodata value is defined it will be used as source nodata
-        buildvrtString = 'gdalbuildvrt -srcnodata "' + ' '.join(nodata_list) + '" -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
-    subprocess.run(buildvrtString)
-
-
-    # # create vrt overviews
-    # tile_sample = gdal.Open(tile_sample)
-    # tile_sample_band = tile_sample.GetRasterBand(1)
-    # tile_sample_band.GetOverviewCount
-    # # tile_sample_overview = tile_sample_band.GetOverview(3)
-    # # arr1 = tile_sample_overview.ReadAsArray()
-    # for x in tile_sample.GetMetadata():
-    #     print(x)
-    # dir(tile_sample.GetDescription())
-    
-    # # gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config BIGTIFF IF_SAFER -minsize 128 --config OVERVIEW_COMPRESS ZSTD ' + vrt
-    # gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES  --config OVERVIEW_COMPRESS ZSTD ' + vrt + ' 16 32 64 128 256 512'
-    # subprocess.run(gdaladdoString)
-
-    level = [16, 2, 2, 2, 2, 2]
-    ovr_list = []
-
-    for x in level:
-        if x == level[0]:
-            gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES ' + vrt + ' ' + str(x)
-            print(gdaladdoString)
-            subprocess.run(gdaladdoString)
-            OVERVIEW_FILE = vrt+'.ovr'
-            ovr_list.append(OVERVIEW_FILE)
-            time_level = time.time()
-        else:
-            gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES ' + OVERVIEW_FILE + ' ' + str(x)
-            print(gdaladdoString)
-            subprocess.run(gdaladdoString)
-            OVERVIEW_FILE = OVERVIEW_FILE+'.ovr'
-            ovr_list.append(OVERVIEW_FILE)
-            time_level = time.time()
-            ovr_tif =[]
-
-    for x in ovr_list:
-        x_split = x.split('.vrt.ovr')
-        new_name =  x_split[0]+'2.tif'+x_split[1]
-        os.rename(x, new_name)
-        ovr_tif.append(new_name)
-
-    ovr = ovr_tif[0]
-    
-    ds = gdal.Open(ovr)
-    ds.SetProjection('EPSG:'+str(out_srs))
-    ds.SetGeoTransform([ulx, level[0]*xres, 0, uly, 0, level[0]*yres])
-    ds = None
-    gdaltransString = 'gdal_translate ' + ovr + ' ' + vrt[:-4]+ '.tif' + ' -co COMPRESS=ZSTD -co BIGTIFF=YES -co COPY_SRC_OVERVIEWS=YES --config OVERVIEW_COMPRESS ZSTD --config GDAL_NUM_THREADS ALL_CPUS' 
-    subprocess.run(gdaltransString)
-    ovr_final = vrt[:-4]+'.vrt.ovr'
-    os.rename(vrt[:-4]+ '.tif',ovr_final)
-    for x in ovr_tif:
+# create extent vector layer which contains following three layers
+#   outline of complete dataset
+#   outline of each tile
+#   all 2x2 km tiles which contain data
+vector_data = glob(os.path.join(dir_footprint, '*000.gpkg'))
+tiles_valid = []
+for x in vector_data:
+    df = geopandas.read_file(x, layer='contour')
+    tif_path = os.path.join(dir_cog, os.path.basename(x)[:-5]+'.tif')
+    # remove empty vector tiles, raster tiles
+    if df.empty:
         os.remove(x)
-    os.remove(ovr+'.aux.xml')
+        os.remove(tif_path)
+    else:
+        if 'location' not in df:
+            df.insert(1, 'location', tif_path)
+        tiles_valid.append(df)
+extent = os.path.join(dir_footprint, tile_name+'_extent.gpkg')
 
-    #remove temporary layers
-    vector_list = glob(os.path.join(dir_footprint, '*'))
-    for x in vector_list:
-        if x != extent:
-            os.remove(x)
+# merge all tile outlines 
+df_merged = pandas.concat(tiles_valid)
+df_merged['geometry'] = df_merged['geometry'].make_valid()
+df_merged.to_file(extent, layer='footprint_outline', driver="GPKG")
+# dissolve tile outlines to dataset outline
+df_outline = df_merged.dissolve(by='ID')
+df_outline['location'] = os.path.join(path_data, vrt_name + '.vrt')
+df_outline['geometry'] =df_outline['geometry'].make_valid()
+df_outline.to_file(extent, layer='outline', driver="GPKG")
+# get all 2x2 km tiles which contain data
+gdalindex_string = 'gdaltindex -tileindex location -lyr_name footprints ' + extent + ' ' + os.path.join(dir_cog) + '/*.tif'
+subprocess.run(gdalindex_string)
 
-    delete_list = glob(os.path.join(dir_vrt, '*'))
-    for x in delete_list:
-        if not x in (vrt, ovr_final):
-            openfile = open(x)
-            openfile.close()
-            print(x)
-            os.remove(x)
-    os.removedirs(dir_vrt)
+# read metadaten files
+metadata = glob(os.path.join(path_meta, '*.csv'))
+metadata = pandas.read_csv(metadata[0], sep='\r\n', skip_blank_lines=True, header=None, encoding='utf-8', engine='python')
+metadata = metadata.values.flatten().tolist()
 
-    hours, rem = divmod(time.time() - start_time, 3600)
-    minutes, seconds = divmod(rem, 60)
-    print("{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
-    if warning != '':
-        print(warning)
+# add metadata to vector tiles
+def insert_medata(file):
+    layers = fiona.listlayers(file)
+    for table in layers:
+        dataframe = geopandas.read_file(file, layer=table)
+        for x in metadata:
+            x = x.rstrip()
+            if ';' in x:
+                y = x.split(';')
+                column = y[0]
+                value = y[1]
+                dataframe.insert(len(dataframe.columns), column, '') #add column to dataframe
+                dataframe[column] = value  #fill coulumn
+        index = dataframe.columns.get_loc('datum_bildflug_von') #get column position
+        dataframe.insert(index, 'bildflug_jahr', '')  # add column to dataframe
+        dataframe['bildflug_jahr'] = dataframe['datum_bildflug_von'].str.split('-')[0][0]  # fill coulumn
+        # if table != 'outline':
+        index = dataframe.columns.get_loc('location')
+        dataframe.insert(index, 'path', '')  # add column to dataframe
+        dataframe['path'] = dataframe.apply(lambda row: '/'.join(row.location.split('\\')[5:]), axis = 1)
+        dataframe.drop(['location'],axis=1,inplace=True)
+        dataframe.loc[dataframe['epsg']!= str(out_srs),'epsg'] = str(out_srs)
+        if 'ID' in dataframe.columns:
+            dataframe.drop(['ID'],axis=1,inplace=True)
+        dataframe.to_file(file, layer=table, driver="GPKG")
+
+insert_medata(extent)
+
+
+# build vrt from cog tiles
+dir_cog = pathlib.Path(dir_cog)
+input_windows_path = dir_cog.rglob("*.tif")
+tif = []
+for x in input_windows_path:
+    tif.append(str(x))
+tile_sample = tif[0]
+tif= '\n'.join(tif)
+
+with open(input_list_txt, 'w') as file:
+    file.write(tif)
+    file.close()
+vrt = os.path.join(path_data, vrt_name + '.vrt')
+try:
+    nodata_list #check if nodata list exists
+except NameError:
+    buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
+else:
+    # if nodata value is defined it will be used as source nodata
+    buildvrtString = 'gdalbuildvrt -srcnodata "' + ' '.join(nodata_list) + '" -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
+subprocess.run(buildvrtString)
+
+
+# # create vrt overviews
+# tile_sample = gdal.Open(tile_sample)
+# tile_sample_band = tile_sample.GetRasterBand(1)
+# tile_sample_band.GetOverviewCount
+# # tile_sample_overview = tile_sample_band.GetOverview(3)
+# # arr1 = tile_sample_overview.ReadAsArray()
+# for x in tile_sample.GetMetadata():
+#     print(x)
+# dir(tile_sample.GetDescription())
+
+# # gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config BIGTIFF IF_SAFER -minsize 128 --config OVERVIEW_COMPRESS ZSTD ' + vrt
+# gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES  --config OVERVIEW_COMPRESS ZSTD ' + vrt + ' 16 32 64 128 256 512'
+# subprocess.run(gdaladdoString)
+
+level = [16, 2, 2, 2, 2, 2]
+ovr_list = []
+
+for x in level:
+    if x == level[0]:
+        gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES ' + vrt + ' ' + str(x)
+        print(gdaladdoString)
+        subprocess.run(gdaladdoString)
+        OVERVIEW_FILE = vrt+'.ovr'
+        ovr_list.append(OVERVIEW_FILE)
+        time_level = time.time()
+    else:
+        gdaladdoString = 'gdaladdo -r average -ro --config GDAL_NUM_THREADS ALL_CPUS --config COPY_SRC_OVERVIEWS YES ' + OVERVIEW_FILE + ' ' + str(x)
+        print(gdaladdoString)
+        subprocess.run(gdaladdoString)
+        OVERVIEW_FILE = OVERVIEW_FILE+'.ovr'
+        ovr_list.append(OVERVIEW_FILE)
+        time_level = time.time()
+        ovr_tif =[]
+
+for x in ovr_list:
+    x_split = x.split('.vrt.ovr')
+    new_name =  x_split[0]+'2.tif'+x_split[1]
+    os.rename(x, new_name)
+    ovr_tif.append(new_name)
+
+ovr = ovr_tif[0]
+
+ds = gdal.Open(ovr)
+ds.SetProjection('EPSG:'+str(out_srs))
+ds.SetGeoTransform([ulx, level[0]*xres, 0, uly, 0, level[0]*yres])
+ds = None
+gdaltransString = 'gdal_translate ' + ovr + ' ' + vrt[:-4]+ '.tif' + ' -co COMPRESS=ZSTD -co BIGTIFF=YES -co COPY_SRC_OVERVIEWS=YES --config OVERVIEW_COMPRESS ZSTD --config GDAL_NUM_THREADS ALL_CPUS' 
+subprocess.run(gdaltransString)
+ovr_final = vrt[:-4]+'.vrt.ovr'
+os.rename(vrt[:-4]+ '.tif',ovr_final)
+for x in ovr_tif:
+    os.remove(x)
+os.remove(ovr+'.aux.xml')
+
+#remove temporary layers
+vector_list = glob(os.path.join(dir_footprint, '*'))
+for x in vector_list:
+    if x != extent:
+        os.remove(x)
+
+delete_list = glob(os.path.join(dir_vrt, '*'))
+for x in delete_list:
+    if not x in (vrt, ovr_final):
+        openfile = open(x)
+        openfile.close()
+        print(x)
+        os.remove(x)
+os.removedirs(dir_vrt)
+
+hours, rem = divmod(time.time() - start_time, 3600)
+minutes, seconds = divmod(rem, 60)
+print("{:0>2}:{:0>2}:{:05.2f}".format(int(hours), int(minutes), seconds))
+if warning != '':
+    print(warning)
