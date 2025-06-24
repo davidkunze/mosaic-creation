@@ -28,7 +28,7 @@ def collect_files(path, folder_exception=None, formats=None):
     return collected_files
 
 # Function to clip nodata values from raster files
-def clip_nodata(input, nodata_value, vrt_data_path):
+def clip_nodata(input, nodata_value):
     input_path = os.path.dirname(input)
     input_name = os.path.basename(input)
     mask_tif = os.path.join(input_path, f"{input_name.split('.')[0]}_mask.{input_name.split('.')[-1]}")

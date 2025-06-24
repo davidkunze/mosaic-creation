@@ -5,13 +5,13 @@ import subprocess
 import time
 import pathlib
 import multiprocessing as mp
+gdal.UseExceptions()
 
 # Parameters
-path_data = r"\\lb-srv\LB-Z-Temp\David\vrt_cog\testdaten\test_nodata_clip\dop\daten"
+path_data = r"\\lb-srv\LB-Z-Temp\David\vrt_cog\testdaten\test_nodata_clip\dop\daten_nodata0"
 nodata_value = 0
-folder_exception = ['kacheln']  # Set to None or '' to disable filtering
-formats = ['*.tif', '*.jpg', '*.png', '*.img', '*.ovr'] # Specify the formats to collect # If you want to collect all files, set it None
-vrt_data = r"\\lb-srv\LB-Z-Temp\David\vrt_cog\testdaten\test_nodata_clip\dop\daten\kacheln"
+folder_exception = ['roh']  # Set to None or '' to disable filtering
+formats = ['*.tif', '*.jpg', '*.png', '*.img'] # Specify the formats to collect # If you want to collect all files, set it None
 
 # Function to collect files based on specified formats and exceptions
 def collect_files(path, folder_exception=None, formats=None):
@@ -28,7 +28,7 @@ def collect_files(path, folder_exception=None, formats=None):
     return collected_files
 
 # Function to clip nodata values from raster files
-def clip_nodata(input, nodata_value, vrt_data_path):
+def clip_nodata(input, nodata_value):
     input_path = os.path.dirname(input)
     input_name = os.path.basename(input)
     mask_tif = os.path.join(input_path, f"{input_name.split('.')[0]}_mask.{input_name.split('.')[-1]}")
@@ -39,16 +39,6 @@ def clip_nodata(input, nodata_value, vrt_data_path):
     if input.endswith('.ovr'):
         base_file = f"{input.split('.')[0]}.{input.split('.')[1]}"
         dataset = gdal.Open(base_file) # Open the base file of overview to read the geotransform and projection
-        # if basefile.endswith('.vrt') and vrt_data_path:
-        #     vrt_files = collect_files(vrt_data_path, formats=['*.tif', '*.jpg', '*.png', '*.img'])
-        #     input_data_str = '\n'.join(vrt_files)
-        #     input_list_txt = base_file.replace('.vrt', 'input_list.txt')
-        #     with open(input_list_txt, 'w') as file:
-        #         file.write(input_data_str)
-        #         file.close()
-        #     gdalBuildVRTString = f'gdalbuildvrt -overwrite -input_file_list {rename} {base_file}'
-        #     subprocess.run(gdalBuildVRTString)
-        #     remove_file = input_list_txt
     else:
         dataset = gdal.Open(rename)
     
@@ -118,14 +108,32 @@ def clip_nodata(input, nodata_value, vrt_data_path):
     os.remove(cutline)
     os.remove(rename)
 
-input_data = collect_files(path_data, folder_exception, formats)
+input_data_ovr = collect_files(path_data, folder_exception, formats=['*.ovr'])
+input_data_images = collect_files(path_data, folder_exception, formats=['*.tif', '*.jpg', '*.png', '*.img'])
+
+# for x in input_data_ovr:
+#     clip_nodata(x, nodata_value)
 
 if __name__ == '__main__':
     count = mp.cpu_count()
     pool = mp.Pool(count-count+4)
-    args = [(x, nodata_value, vrt_data) for x in input_data]
+    args = [(x, nodata_value) for x in input_data_ovr]
+    pool.starmap(clip_nodata, args)
+    args = [(x, nodata_value) for x in input_data_images]
     pool.starmap(clip_nodata, args)
     pool.close()
     pool.join()
+
+ovr_base = input_data_ovr[0].split('.ovr')[0] + '.vrt'
+vrt_data_path = os.path.join(os.path.dirname(input_data_ovr[0]) , 'kacheln')
+vrt_files = collect_files(vrt_data_path, formats=['*.tif', '*.jpg', '*.png', '*.img'])
+input_data_str = '\n'.join(vrt_files)
+input_list_txt = ovr_base.replace('.vrt', '_input_list.txt')
+with open(input_list_txt, 'w') as file:
+    file.write(input_data_str)
+    file.close()
+gdalBuildVRTString = f'gdalbuildvrt -overwrite -input_file_list {input_list_txt} {ovr_base}'
+subprocess.run(gdalBuildVRTString)
+remove_file = input_list_txt
 
 print("Processing complete.")
