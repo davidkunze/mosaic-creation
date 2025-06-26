@@ -1,17 +1,17 @@
 import os
 from osgeo import gdal, osr, ogr
 import numpy as np
+import pandas
 import subprocess
 import time
 import pathlib
 import multiprocessing as mp
 
 # Parameters
-path_data = r"\\lb-srv\LB-Z-Temp\David\vrt_cog\testdaten\test_nodata_clip\dop\daten"
-nodata_value = 0
-folder_exception = ['kacheln']  # Set to None or '' to disable filtering
+path_data = r"\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\daten\rohdaten"
+nodata_value = 65535
+folder_exception = []  # Set to None or '' to disable filtering
 formats = ['*.tif', '*.jpg', '*.png', '*.img', '*.ovr'] # Specify the formats to collect # If you want to collect all files, set it None
-vrt_data = r"\\lb-srv\LB-Z-Temp\David\vrt_cog\testdaten\test_nodata_clip\dop\daten\kacheln"
 
 # Function to collect files based on specified formats and exceptions
 def collect_files(path, folder_exception=None, formats=None):
@@ -74,10 +74,14 @@ def clip_nodata(input, nodata_value):
     out_ds = None
     
     # Create a cutline from the mask
-    gdalpolygonizeString = f'gdal_polygonize {mask_tif}  -b 1 -f "GPKG" {cutline} outline'
-    subprocess.run(gdalpolygonizeString)
-    # gdalcontour_String = f'gdal_contour -p -fl 1 -b 1 -nln outline -f "GPKG" {mask_tif} {cutline}'
-    # subprocess.run(gdalcontour_String)
+    # gdalpolygonizeString = f'gdal_polygonize {mask_tif}  -b 1 -f "GPKG" {cutline} outline'
+    # subprocess.run(gdalpolygonizeString)
+    gdalcontour_String = f'gdal_contour -p -fl 1 -b 1 -nln outline -f "GPKG" {mask_tif} {cutline}'
+    subprocess.run(gdalcontour_String)
+    # repair invalid geometries in the cutline
+    df = pandas.read_file(cutline, layer='outline')
+    df['geometry'] = df['geometry'].make_valid()
+    df.to_file(cutline, layer='outline', driver='GPKG')
     
     # Clip the input raster using the cutline
     if input.endswith('.tif'):
@@ -104,16 +108,16 @@ def clip_nodata(input, nodata_value):
 
     dataset = None
 
-    os.remove(mask_tif)
-    os.remove(cutline)
-    os.remove(rename)
+    # os.remove(mask_tif)
+    # os.remove(cutline)
+    # os.remove(rename)
 
 input_data = collect_files(path_data, folder_exception, formats)
 
 if __name__ == '__main__':
     count = mp.cpu_count()
-    pool = mp.Pool(count-count+4)
-    args = [(x, nodata_value, vrt_data) for x in input_data]
+    pool = mp.Pool(count-count+1)
+    args = [(x, nodata_value) for x in input_data]
     pool.starmap(clip_nodata, args)
     pool.close()
     pool.join()
