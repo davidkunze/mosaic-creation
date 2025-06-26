@@ -1,6 +1,9 @@
 import os
 from osgeo import gdal, osr, ogr
 import numpy as np
+import geopandas as gpd
+import pandas as pd
+import glob
 import subprocess
 import time
 import pathlib
@@ -8,7 +11,7 @@ import multiprocessing as mp
 gdal.UseExceptions()
 
 # Parameters
-path_data = r"\\lb-srv\LB-Z-Temp\David\vrt_cog\testdaten\test_nodata_clip\dop\daten_nodata0"
+path_data = r"\\lb-srv\LB-Z-Temp\David\vrt_cog\testdaten\test_nodata_clip\dop\daten"
 nodata_value = 0
 folder_exception = ['roh']  # Set to None or '' to disable filtering
 formats = ['*.tif', '*.jpg', '*.png', '*.img'] # Specify the formats to collect # If you want to collect all files, set it None
@@ -78,6 +81,10 @@ def clip_nodata(input, nodata_value):
     subprocess.run(gdalpolygonizeString)
     # gdalcontour_String = f'gdal_contour -p -fl 1 -b 1 -nln outline -f "GPKG" {mask_tif} {cutline}'
     # subprocess.run(gdalcontour_String)
+    # repair invalid geometries in the cutline
+    df = gpd.read_file(cutline, layer='outline')
+    df['geometry'] = df['geometry'].make_valid()
+    df.to_file(cutline, layer='outline', driver='GPKG')
     
     # Clip the input raster using the cutline
     if input.endswith('.tif'):
@@ -124,7 +131,7 @@ if __name__ == '__main__':
     pool.close()
     pool.join()
 
-ovr_base = input_data_ovr[0].split('.ovr')[0] + '.vrt'
+ovr_base = input_data_ovr[0].split('.ovr')[0]
 vrt_data_path = os.path.join(os.path.dirname(input_data_ovr[0]) , 'kacheln')
 vrt_files = collect_files(vrt_data_path, formats=['*.tif', '*.jpg', '*.png', '*.img'])
 input_data_str = '\n'.join(vrt_files)
@@ -134,6 +141,7 @@ with open(input_list_txt, 'w') as file:
     file.close()
 gdalBuildVRTString = f'gdalbuildvrt -overwrite -input_file_list {input_list_txt} {ovr_base}'
 subprocess.run(gdalBuildVRTString)
-remove_file = input_list_txt
+os.remove(input_list_txt)  # Remove the input list file after use
+
 
 print("Processing complete.")
