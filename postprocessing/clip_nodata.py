@@ -8,7 +8,7 @@ import pathlib
 import multiprocessing as mp
 
 # Parameters
-path_data = r"\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\daten\rohdaten"
+path_data = r"\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\daten\kacheln"
 nodata_value = 65535
 folder_exception = []  # Set to None or '' to disable filtering
 formats = ['*.tif', '*.jpg', '*.png', '*.img', '*.ovr'] # Specify the formats to collect # If you want to collect all files, set it None

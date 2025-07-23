@@ -10,22 +10,24 @@ import geopandas
 import pandas
 import numpy
 import subprocess
+from shapely.validation import make_valid 
 from osgeo import gdal, osr, ogr
 gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-srv\LB-Z-Temp\David\vrt_cog\testdaten\test_nodata_clip\dop\daten'
+path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2009_harz_dop'
+tile_name = 'he_flugzeug_2020_muenzenberg_sgb2_dop'
 
 vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
 # if nodata-value is "nodata" use empty string ''
-nodata_value = '' 
+nodata_value = '65535' 
+nodata_clip_option = 1 # if True, nodata values will be clipped from the tiles
 
 in_srs_specified = 25832 #in some cases, the coordinate system does not apper GDAL-readable, in such cases, specify coordinate system 
 out_srs = 25832 #EPSG-code of output projection
@@ -120,15 +122,15 @@ if not in_srs in [str(out_srs)]:
         ogr2ogrString = 'ogr2ogr -f "GPKG" -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
         subprocess.run(ogr2ogrString)
         print("in_srs is NONE")
-    if in_srs in ['4314', '9122']:
-        # direct projection from 4314, 9122 to 25832 is defective, therefore the projection 31476 is used as in_srs
-        in_srs = 31467
-        gdalwarpString = 'gdalwarp -of VRT -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + vrt_temp + ' ' + vrt_temp_proj
-        subprocess.run(gdalwarpString)
-        print('gdalwarpString: ' + gdalwarpString)
-        ogr2ogrString = 'ogr2ogr -f "GPKG" -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
-        subprocess.run(ogr2ogrString)
-        print("in_srs is 4314 or 9122")    
+    # if in_srs in ['4314', '9122']:
+    #     # direct projection from 4314, 9122 to 25832 is defective, therefore the projection 31476 is used as in_srs
+    #     in_srs = 31467
+    #     gdalwarpString = 'gdalwarp -of VRT -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + vrt_temp + ' ' + vrt_temp_proj
+    #     subprocess.run(gdalwarpString)
+    #     print('gdalwarpString: ' + gdalwarpString)
+    #     ogr2ogrString = 'ogr2ogr -f "GPKG" -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
+    #     subprocess.run(ogr2ogrString)
+    #     print("in_srs is 4314 or 9122")    
     else:
         gdalwarpString = 'gdalwarp -of VRT -t_srs EPSG:' + str(out_srs) + ' ' + vrt_temp + ' ' + vrt_temp_proj
         subprocess.run(gdalwarpString)
@@ -275,8 +277,89 @@ def simplify_by_angle(poly_in, deg_tol=1):
     new_vertices = [ext_poly_coords[idx] for idx in new_idx]
     return Polygon(new_vertices)
 
+def remove_inner_rings(geom):
+    if isinstance(geom, Polygon):
+        geom = simplify_by_angle(geom)
+        return Polygon(geom.exterior)
+    elif isinstance(geom, MultiPolygon):
+        geom = MultiPolygon([simplify_by_angle(p) for p in geom.geoms])
+        return MultiPolygon([Polygon(p.exterior) for p in geom.geoms])
+    else:
+        return geom
 
-def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
+# Function to clip nodata values from raster files
+def clip_nodata(input, nodata_value, cutline_dir = None):
+    input_path = os.path.dirname(input)
+    input_name = os.path.basename(input)
+    if cutline_dir is None:
+        cutline_dir = input_path
+    rename = os.path.join(input_path, f"{input_name.split('.')[0]}_rename.{input_name.split('.')[-1]}")
+    os.rename(input, rename)
+    mask_tif = os.path.join(input_path, f"{input_name.split('.')[0]}_mask.{input_name.split('.')[-1]}")
+    cutline = os.path.join(cutline_dir,f"{input_name.split('.')[0]}.gpkg")
+    print(cutline)
+   
+    dataset = gdal.Open(rename)
+    
+    # Create a mask for nodata values across all bands
+    band_count = dataset.RasterCount
+    driver = gdal.GetDriverByName("GTiff")
+    
+    out_ds = driver.Create(
+        mask_tif,
+        dataset.RasterXSize,
+        dataset.RasterYSize,
+        1,
+        gdal.GDT_Byte,
+        options=["TILED=YES", "COMPRESS=DEFLATE"]
+    )
+    out_ds.SetGeoTransform(dataset.GetGeoTransform())
+    out_ds.SetProjection(dataset.GetProjection())
+
+    # Read nodata values and create a mask
+    block_size = 1024
+
+    for y in range(0, dataset.RasterYSize, block_size):
+        rows = min(block_size, dataset.RasterYSize - y)
+        for x in range(0, dataset.RasterXSize, block_size):
+            cols = min(block_size, dataset.RasterXSize - x)
+            band_list = []
+            for band in range(1, band_count + 1):
+                b = dataset.GetRasterBand(band).ReadAsArray(x, y, cols, rows)
+                band_list.append(b == nodata_value)
+            mask = numpy.logical_and.reduce(band_list).astype(numpy.uint8)
+            out_ds.GetRasterBand(1).WriteArray(mask, x, y)
+    out_ds.GetRasterBand(1).SetNoDataValue(1)
+    out_ds = None
+    dataset = None
+
+    # Create a cutline from the mask
+    # gdalpolygonizeString = f'gdal_polygonize {mask_tif}  -b 1 -f "GPKG" {cutline} outline'
+    # subprocess.run(gdalpolygonizeString)
+    gdalcontour_String = f'gdal_contour -p -fl 1 -b 1 -f "GPKG" {mask_tif} {cutline}'
+    subprocess.run(gdalcontour_String)
+    # repair invalid geometries in the cutline
+    gdf = geopandas.read_file(cutline, layer='contour')
+     # Simplifying contour polygon to reduce number of vertices
+    simplified_geometries = []
+    # Apply the simplification function to each geometry in the GeoDataFrame
+    for geometry in gdf['geometry']:
+        # For MultiPolygon, simplify each individual Polygon in the MultiPolygon
+        simplified_multipolygon = MultiPolygon([simplify_by_angle(p) for p in geometry.geoms])
+        simplified_geometries.append(simplified_multipolygon)
+    gdf['geometry'] = simplified_geometries
+    gdf['geometry'] = gdf['geometry'].apply(remove_inner_rings).apply(make_valid).apply(remove_inner_rings)
+    # Save the modified geodata frame back to the file
+    gdf.to_file(cutline, layer='contour', driver="GPKG")
+    
+    gdalwarpString = f"gdalwarp -overwrite -r rms -of COG -dstnodata None -co COMPRESS=ZSTD -co PREDICTOR=2 -co BIGTIFF=YES --config OVERVIEW_COMPRESS ZSTD -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50  -cutline {cutline} -cl contour -crop_to_cutline {rename} {input}"
+    print(gdalwarpString)
+    subprocess.run(gdalwarpString)
+    
+    os.remove(mask_tif)
+    os.remove(rename)
+
+def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata_clip_option=None):
     i = 1
     bands = []
     while i < count_bands + 2:
@@ -318,31 +401,38 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res):
         print(gdaltranString)
         # gdalwarpString = 'gdalwarp -q -of COG -co COMPRESS=' + comp + ' -co PREDICTOR=2 -co BIGTIFF=YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -t_srs EPSG:' + str(out_srs) + ' -tr ' + str(x_res) + ' ' + str(abs(y_res)) + ' -r ' + resamp_method + ' -te ' + str(extent[0]) + ' ' + str(extent[3]) + ' ' + str(extent[2]) + ' ' + str(extent[1]) + ' -multi --config GDAL_TIFF_INTERNAL_MASK YES -wo INIT_DEST=NO_DATA ' + input + ' ' + output
         # subprocess.run(gdalwarpString)
-        # print(gdalwarpString)        
-    # create polygon from data extent
-    footprint = os.path.join(dir_footprint, output_name + ".gpkg")
-    if not os.path.isfile(footprint): #calculate file just if it exists
-        gdalvectorString = 'gdal_contour -q -fl 0 -b 1 -f "GPKG" -p ' + output + ' ' + footprint
-        subprocess.run(gdalvectorString)
-        # Simplifying contour polygon to reduce number of vertices
-        gdf = geopandas.read_file(footprint, layer='contour')
-        simplified_geometries = []
-        # Apply the simplification function to each geometry in the GeoDataFrame
-        for geometry in gdf['geometry']:
-            # For MultiPolygon, simplify each individual Polygon in the MultiPolygon
-            simplified_multipolygon = MultiPolygon([simplify_by_angle(p) for p in geometry.geoms])
-            simplified_geometries.append(simplified_multipolygon)
-        gdf['geometry'] = simplified_geometries
-        # Save the modified geodata frame back to the file
-        gdf.to_file(footprint, layer='contour', driver="GPKG")
+        # print(gdalwarpString)      
+
+    if nodata_clip_option == 1:
+        print('clip nodata values from raster tile: ' + output)
+        # clip nodata values from raster tiles
+        clip_nodata(output, nodata_value=nodata_value, cutline_dir=dir_footprint)
+
+    else:
+        # create polygon from data extent
+        footprint = os.path.join(dir_footprint, output_name + ".gpkg")
+        if not os.path.isfile(footprint): #calculate file just if it exists
+            gdalvectorString = 'gdal_contour -q -fl 0 -b 1 -f "GPKG" -p ' + output + ' ' + footprint
+            subprocess.run(gdalvectorString)
+            # Simplifying contour polygon to reduce number of vertices
+            gdf = geopandas.read_file(footprint, layer='contour')
+            simplified_geometries = []
+            # Apply the simplification function to each geometry in the GeoDataFrame
+            for geometry in gdf['geometry']:
+                # For MultiPolygon, simplify each individual Polygon in the MultiPolygon
+                simplified_multipolygon = MultiPolygon([simplify_by_angle(p) for p in geometry.geoms])
+                simplified_geometries.append(simplified_multipolygon)
+            gdf['geometry'] = simplified_geometries
+            # Save the modified geodata frame back to the file
+            gdf.to_file(footprint, layer='contour', driver="GPKG")
 
 
 # ###############
 # create 2x2 km cog tiles from temporary vrt that was created from input data  
 if __name__ == '__main__':
     count = mp.cpu_count()
-    pool = mp.Pool(count-count+8)
-    args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres) for x in tiles]
+    pool = mp.Pool(count-count+4)
+    args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres, 1) for x in tiles]
     pool.starmap(tiling, args)
     pool.close()
     pool.join()
