@@ -2,13 +2,14 @@ import os
 from osgeo import gdal, osr, ogr
 import numpy as np
 import pandas
+import geopandas as gpd
 import subprocess
 import time
 import pathlib
 import multiprocessing as mp
 
 # Parameters
-path_data = r"\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\daten\kacheln"
+path_data = r"\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\testdaten\daten\kacheln"
 nodata_value = 65535
 folder_exception = []  # Set to None or '' to disable filtering
 formats = ['*.tif', '*.jpg', '*.png', '*.img', '*.ovr'] # Specify the formats to collect # If you want to collect all files, set it None
@@ -79,13 +80,13 @@ def clip_nodata(input, nodata_value):
     gdalcontour_String = f'gdal_contour -p -fl 1 -b 1 -nln outline -f "GPKG" {mask_tif} {cutline}'
     subprocess.run(gdalcontour_String)
     # repair invalid geometries in the cutline
-    df = pandas.read_file(cutline, layer='outline')
+    df = gpd.read_file(cutline, layer='outline')
     df['geometry'] = df['geometry'].make_valid()
     df.to_file(cutline, layer='outline', driver='GPKG')
     
     # Clip the input raster using the cutline
     if input.endswith('.tif'):
-        gdalwarpString = f"gdalwarp -overwrite -r rms -of COG -dstnodata None -co COMPRESS=ZSTD -co PREDICTOR=2 -co BIGTIFF=YES --config OVERVIEW_COMPRESS ZSTD -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50  -cutline {cutline} -cl outline -crop_to_cutline {rename} {input}"
+        gdalwarpString = f"gdalwarp -overwrite -r rms -of COG -srcnodata None -dstnodata None -co COMPRESS=ZSTD -co PREDICTOR=2 -co BIGTIFF=YES --config OVERVIEW_COMPRESS ZSTD -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50  -cutline {cutline} -cl outline -crop_to_cutline {rename} {input}"
         subprocess.run(gdalwarpString)
     if input.endswith('.ovr'):
         rename_ds = gdal.Open(rename) # Open the ovr dataset to set positional parameter to achieve correct positioning
@@ -98,12 +99,12 @@ def clip_nodata(input, nodata_value):
         rename_ds = None        
         tif = rename.replace('.ovr','.tif')
         # clip the ovr dataset with data specifications as output format and compression
-        gdalwarpString = f"gdalwarp -overwrite -r rms -of COG -dstnodata None -co COMPRESS=ZSTD -co PREDICTOR=2 -co BIGTIFF=YES --config OVERVIEW_COMPRESS ZSTD -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -cutline {cutline} -cl outline -crop_to_cutline {rename} {tif}"
+        gdalwarpString = f"gdalwarp -overwrite -r rms -of COG -srcnodata None -dstnodata None -co COMPRESS=ZSTD -co PREDICTOR=2 -co BIGTIFF=YES --config OVERVIEW_COMPRESS ZSTD -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -cutline {cutline} -cl outline -crop_to_cutline {rename} {tif}"
         print(gdalwarpString)
         subprocess.run(gdalwarpString)
         os.rename(tif, input)
     else:
-        gdalwarpString = f"gdalwarp -overwrite -r rms -dstnodata None -co COMPRESS=ZSTD -co PREDICTOR=2 -co BIGTIFF=YES -cutline {cutline} -cl outline -crop_to_cutline {rename} {input}"
+        gdalwarpString = f"gdalwarp -overwrite -r rms -srcnodata None -dstnodata None -co COMPRESS=ZSTD -co PREDICTOR=2 -co BIGTIFF=YES -cutline {cutline} -cl outline -crop_to_cutline {rename} {input}"
         subprocess.run(gdalwarpString)
 
     dataset = None

@@ -16,7 +16,7 @@ gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\daten'
+path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\testdaten\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
@@ -27,7 +27,8 @@ vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
 # if nodata-value is "nodata" use empty string ''
 nodata_value = '65535' 
-nodata_clip_option = 1 # if True, nodata values will be clipped from the tiles
+nodata_clip_option = 1 # if nodata_clip_option=1, nodata values will be clipped from the tiles
+
 
 in_srs_specified = 25832 #in some cases, the coordinate system does not apper GDAL-readable, in such cases, specify coordinate system 
 out_srs = 25832 #EPSG-code of output projection
@@ -352,14 +353,14 @@ def clip_nodata(input, nodata_value, cutline_dir = None):
     # Save the modified geodata frame back to the file
     gdf.to_file(cutline, layer='contour', driver="GPKG")
     
-    gdalwarpString = f"gdalwarp -overwrite -r rms -of COG -dstnodata None -co COMPRESS=ZSTD -co PREDICTOR=2 -co BIGTIFF=YES --config OVERVIEW_COMPRESS ZSTD -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50  -cutline {cutline} -cl contour -crop_to_cutline {rename} {input}"
+    gdalwarpString = f"gdalwarp -overwrite -r rms -of COG -srcnodata None -dstnodata None -co COMPRESS=ZSTD -co PREDICTOR=2 -co BIGTIFF=YES --config OVERVIEW_COMPRESS ZSTD -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50  -cutline {cutline} -cl contour -crop_to_cutline {rename} {input}"
     print(gdalwarpString)
     subprocess.run(gdalwarpString)
     
     os.remove(mask_tif)
     os.remove(rename)
 
-def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata_clip_option=None):
+def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata_clip=nodata_clip_option):
     i = 1
     bands = []
     while i < count_bands + 2:
@@ -403,28 +404,28 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata
         # subprocess.run(gdalwarpString)
         # print(gdalwarpString)      
 
-    if nodata_clip_option == 1:
+    if nodata_clip == 1:
         print('clip nodata values from raster tile: ' + output)
         # clip nodata values from raster tiles
         clip_nodata(output, nodata_value=nodata_value, cutline_dir=dir_footprint)
 
-    else:
-        # create polygon from data extent
-        footprint = os.path.join(dir_footprint, output_name + ".gpkg")
-        if not os.path.isfile(footprint): #calculate file just if it exists
-            gdalvectorString = 'gdal_contour -q -fl 0 -b 1 -f "GPKG" -p ' + output + ' ' + footprint
-            subprocess.run(gdalvectorString)
-            # Simplifying contour polygon to reduce number of vertices
-            gdf = geopandas.read_file(footprint, layer='contour')
-            simplified_geometries = []
-            # Apply the simplification function to each geometry in the GeoDataFrame
-            for geometry in gdf['geometry']:
-                # For MultiPolygon, simplify each individual Polygon in the MultiPolygon
-                simplified_multipolygon = MultiPolygon([simplify_by_angle(p) for p in geometry.geoms])
-                simplified_geometries.append(simplified_multipolygon)
-            gdf['geometry'] = simplified_geometries
-            # Save the modified geodata frame back to the file
-            gdf.to_file(footprint, layer='contour', driver="GPKG")
+        # else:
+            # create polygon from data extent
+    footprint = os.path.join(dir_footprint, output_name + ".gpkg")
+    if not os.path.isfile(footprint): #calculate file just if it exists
+        gdalvectorString = 'gdal_contour -q -fl 0 -b 1 -f "GPKG" -p ' + output + ' ' + footprint
+        subprocess.run(gdalvectorString)
+        # Simplifying contour polygon to reduce number of vertices
+        gdf = geopandas.read_file(footprint, layer='contour')
+        simplified_geometries = []
+        # Apply the simplification function to each geometry in the GeoDataFrame
+        for geometry in gdf['geometry']:
+            # For MultiPolygon, simplify each individual Polygon in the MultiPolygon
+            simplified_multipolygon = MultiPolygon([simplify_by_angle(p) for p in geometry.geoms])
+            simplified_geometries.append(simplified_multipolygon)
+        gdf['geometry'] = simplified_geometries
+        # Save the modified geodata frame back to the file
+        gdf.to_file(footprint, layer='contour', driver="GPKG")
 
 
 # ###############
