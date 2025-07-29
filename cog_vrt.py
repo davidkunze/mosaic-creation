@@ -16,7 +16,7 @@ gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\testdaten\daten'
+path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
@@ -327,7 +327,7 @@ def clip_nodata(input, nodata_value, cutline_dir = None):
             band_list = []
             for band in range(1, band_count + 1):
                 b = dataset.GetRasterBand(band).ReadAsArray(x, y, cols, rows)
-                band_list.append(b == nodata_value)
+                band_list.append(b == pandas.to_numeric(nodata_value))
             mask = numpy.logical_and.reduce(band_list).astype(numpy.uint8)
             out_ds.GetRasterBand(1).WriteArray(mask, x, y)
     out_ds.GetRasterBand(1).SetNoDataValue(1)
@@ -353,14 +353,14 @@ def clip_nodata(input, nodata_value, cutline_dir = None):
     # Save the modified geodata frame back to the file
     gdf.to_file(cutline, layer='contour', driver="GPKG")
     
-    gdalwarpString = f"gdalwarp -overwrite -r rms -of COG -srcnodata None -dstnodata None -co COMPRESS=ZSTD -co PREDICTOR=2 -co BIGTIFF=YES --config OVERVIEW_COMPRESS ZSTD -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50  -cutline {cutline} -cl contour -crop_to_cutline {rename} {input}"
+    gdalwarpString = f"gdalwarp -overwrite -r rms -of COG -srcnodata None -dstnodata 0 -co COMPRESS=ZSTD -co PREDICTOR=2 -co BIGTIFF=YES --config OVERVIEW_COMPRESS ZSTD -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50  -cutline {cutline} -cl contour -crop_to_cutline {rename} {input}"
     print(gdalwarpString)
     subprocess.run(gdalwarpString)
     
     os.remove(mask_tif)
     os.remove(rename)
 
-def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata_clip=nodata_clip_option):
+def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata_clip_option=None, nodata_value=None):
     i = 1
     bands = []
     while i < count_bands + 2:
@@ -400,23 +400,14 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata
         gdaltranString = 'gdal_translate -q -of COG -co COMPRESS='+comp+' -co PREDICTOR=2 -r '+resamp_method+' -a_srs EPSG:' + str(out_srs) + ' ' + bands + ' -tr ' + str(x_res) + ' ' + str(y_res) + ' -co BIGTIFF=YES --config GDAL_TIFF_INTERNAL_MASK YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -projwin ' + str(extent[0]) + ', ' + str(extent[1]) + ', ' + str(extent[2]) + ', ' + str(extent[3]) + ' ' + input + ' ' + output
         subprocess.run(gdaltranString)
         print(gdaltranString)
-        # gdalwarpString = 'gdalwarp -q -of COG -co COMPRESS=' + comp + ' -co PREDICTOR=2 -co BIGTIFF=YES -co OVERVIEWS=IGNORE_EXISTING -co OVERVIEW_COMPRESS=' + comp + ' -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50 -t_srs EPSG:' + str(out_srs) + ' -tr ' + str(x_res) + ' ' + str(abs(y_res)) + ' -r ' + resamp_method + ' -te ' + str(extent[0]) + ' ' + str(extent[3]) + ' ' + str(extent[2]) + ' ' + str(extent[1]) + ' -multi --config GDAL_TIFF_INTERNAL_MASK YES -wo INIT_DEST=NO_DATA ' + input + ' ' + output
-        # subprocess.run(gdalwarpString)
-        # print(gdalwarpString)      
 
-    if nodata_clip == 1:
-        print('clip nodata values from raster tile: ' + output)
-        # clip nodata values from raster tiles
-        clip_nodata(output, nodata_value=nodata_value, cutline_dir=dir_footprint)
-
-        # else:
-            # create polygon from data extent
-    footprint = os.path.join(dir_footprint, output_name + ".gpkg")
-    if not os.path.isfile(footprint): #calculate file just if it exists
-        gdalvectorString = 'gdal_contour -q -fl 0 -b 1 -f "GPKG" -p ' + output + ' ' + footprint
+    # create polygon from data extent
+    outline = os.path.join(dir_footprint, output_name + ".gpkg")
+    if not os.path.isfile(outline): #calculate file just if it exists
+        gdalvectorString = 'gdal_contour -q -fl 0 -b 1 -f "GPKG" -p ' + output + ' ' + outline
         subprocess.run(gdalvectorString)
         # Simplifying contour polygon to reduce number of vertices
-        gdf = geopandas.read_file(footprint, layer='contour')
+        gdf = geopandas.read_file(outline, layer='contour')
         simplified_geometries = []
         # Apply the simplification function to each geometry in the GeoDataFrame
         for geometry in gdf['geometry']:
@@ -425,7 +416,25 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata
             simplified_geometries.append(simplified_multipolygon)
         gdf['geometry'] = simplified_geometries
         # Save the modified geodata frame back to the file
-        gdf.to_file(footprint, layer='contour', driver="GPKG")
+        gdf.to_file(outline, layer='contour', driver="GPKG")
+
+    df = geopandas.read_file(outline, layer='contour')
+    # remove empty vector tiles, raster tiles
+    if df.empty:
+        os.remove(outline)
+        os.remove(output)
+    else:
+        if nodata_clip_option == 1:
+            print('clip nodata values from raster tile: ' + output)
+            footprint = os.path.join(dir_footprint, f"{output_name}_footprint.gpkg")
+            gdalindex_string = 'gdaltindex -tileindex location -lyr_name footprint ' + footprint + ' ' + output
+            subprocess.run(gdalindex_string)
+            # clip nodata values from raster tiles
+            clip_nodata(output, nodata_value, cutline_dir=dir_footprint)
+            df = geopandas.read_file(outline, layer='contour')
+        if 'location' not in df.columns:
+            df.insert(1, 'location', output)
+            df.to_file(outline, layer='contour', driver='GPKG')  
 
 
 # ###############
@@ -433,7 +442,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata
 if __name__ == '__main__':
     count = mp.cpu_count()
     pool = mp.Pool(count-count+4)
-    args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres, 1) for x in tiles]
+    args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres, nodata_clip_option, nodata_value) for x in tiles]
     pool.starmap(tiling, args)
     pool.close()
     pool.join()
@@ -442,19 +451,12 @@ if __name__ == '__main__':
     #   outline of complete dataset
     #   outline of each tile
     #   all 2x2 km tiles which contain data 
-    vector_data = glob(os.path.join(dir_footprint, '*000.gpkg'))
+    footprint_outline = glob(os.path.join(dir_footprint, '*000.gpkg'))
     tiles_valid = []
-    for x in vector_data:
+    for x in footprint_outline:
         df = geopandas.read_file(x, layer='contour')
-        tif_path = os.path.join(dir_cog, os.path.basename(x)[:-5]+'.tif')
-        # remove empty vector tiles, raster tiles
-        if df.empty:
-            os.remove(x)
-            os.remove(tif_path)
-        else:
-            if 'location' not in df:
-                df.insert(1, 'location', tif_path)
-            tiles_valid.append(df)
+        tiles_valid.append(df)
+
     extent = os.path.join(dir_footprint, tile_name+'_extent.gpkg')
 
     # merge all tile outlines 
@@ -467,8 +469,18 @@ if __name__ == '__main__':
     df_outline['geometry'] =df_outline['geometry'].make_valid()
     df_outline.to_file(extent, layer='outline', driver="GPKG")
     # get all 2x2 km tiles which contain data
-    gdalindex_string = 'gdaltindex -tileindex location -lyr_name footprints ' + extent + ' ' + os.path.join(dir_cog) + '/*.tif'
-    subprocess.run(gdalindex_string)
+    if nodata_clip_option == 1:
+        footprints = glob(os.path.join(dir_footprint, '*footprint.gpkg'))
+        tiles_footprint = []
+        for x in footprints:
+            df = geopandas.read_file(x, layer='footprint')
+            tiles_footprint.append(df)
+        extent = os.path.join(dir_footprint, tile_name+'_extent.gpkg')
+        df_footprint = pandas.concat(tiles_footprint)
+        df_footprint.to_file(extent, layer='footprints', driver="GPKG") 
+    else:
+        gdalindex_string = 'gdaltindex -tileindex location -lyr_name footprints ' + extent + ' ' + os.path.join(dir_cog) + '/*.tif'
+        subprocess.run(gdalindex_string)
 
     # read metadaten files
     metadata = glob(os.path.join(path_meta, '*.csv'))
