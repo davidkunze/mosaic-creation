@@ -16,12 +16,12 @@ gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\daten'
+path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\testdaten\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'he_flugzeug_2020_muenzenberg_sgb2_dop'
+tile_name = 'he_flugzeug_2020_muenzenberg_dop'
 
 vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
@@ -353,10 +353,20 @@ def clip_nodata(input, nodata_value, cutline_dir = None):
     # Save the modified geodata frame back to the file
     gdf.to_file(cutline, layer='contour', driver="GPKG")
     
-    gdalwarpString = f"gdalwarp -overwrite -r rms -of COG -srcnodata None -dstnodata 0 -co COMPRESS=ZSTD -co PREDICTOR=2 -co BIGTIFF=YES --config OVERVIEW_COMPRESS ZSTD -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50  -cutline {cutline} -cl contour -crop_to_cutline {rename} {input}"
+    if nodata_value == 0:
+        src = rasterio.open(rename) 
+        dtype = src.dtypes[0]
+        dst_nodata = np.iinfo(dtype).max
+        print(f"Using nodata value: {dst_nodata} for dtype: {dtype}")
+        src.close()
+    else:
+        dst_nodata = 0
+    
+    gdalwarpString = f"gdalwarp -overwrite -of COG -srcnodata None -dstnodata {dst_nodata} -co COMPRESS=ZSTD -co PREDICTOR=2 -co BIGTIFF=YES --config OVERVIEW_COMPRESS ZSTD -co OVERVIEW_PREDICTOR=2 -co OVERVIEW_RESAMPLING=average -co OVERVIEW_QUALITY=50  -cutline {cutline} -cl contour -crop_to_cutline {rename} {input}"
     print(gdalwarpString)
     subprocess.run(gdalwarpString)
-    
+
+    # Clean up temporary files
     os.remove(mask_tif)
     os.remove(rename)
 
@@ -424,14 +434,13 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata
         os.remove(outline)
         os.remove(output)
     else:
-        if nodata_clip_option == 1:
-            print('clip nodata values from raster tile: ' + output)
-            footprint = os.path.join(dir_footprint, f"{output_name}_footprint.gpkg")
-            gdalindex_string = 'gdaltindex -tileindex location -lyr_name footprint ' + footprint + ' ' + output
-            subprocess.run(gdalindex_string)
-            # clip nodata values from raster tiles
-            clip_nodata(output, nodata_value, cutline_dir=dir_footprint)
-            df = geopandas.read_file(outline, layer='contour')
+        if nodata_clip_option == 1:          
+                footprint = os.path.join(dir_footprint, f"{output_name}_footprint.gpkg")
+                gdalindex_string = 'gdaltindex -tileindex location -lyr_name footprint ' + footprint + ' ' + output
+                subprocess.run(gdalindex_string)
+                # clip nodata values from raster tiles
+                clip_nodata(output, nodata_value, cutline_dir=dir_footprint)
+                df = geopandas.read_file(outline, layer='contour')
         if 'location' not in df.columns:
             df.insert(1, 'location', output)
             df.to_file(outline, layer='contour', driver='GPKG')  
@@ -529,8 +538,26 @@ if __name__ == '__main__':
         file.write(tif)
         file.close()
     vrt = os.path.join(path_data, vrt_name + '.vrt')
+    
+    if nodata_clip_option == 1:
+        # if nodata value is defined it will be used as source nodata
+        if type(tif) == list:
+            dataset = gdal.Open(tif[0])
+        else:
+            dataset = gdal.Open(tif)
+        nodata_value = dataset.GetRasterBand(1).GetNoDataValue()
+        
+        nodata_list = []
+        i = 1
+        while i < band_count+1:
+            nodata_list.append(str(int(nodata_value)))
+            i += 1
+        nodata_list = ' '.join(nodata_list)
+        print('nodata_list exists: '+ str(nodata_list))
+    
     try:
         nodata_list #check if nodata list exists
+        
     except NameError:
         buildvrtString = 'gdalbuildvrt -overwrite -input_file_list '+ input_list_txt + ' ' + vrt
     else:
