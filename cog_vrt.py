@@ -10,24 +10,25 @@ import geopandas
 import pandas
 import numpy
 import subprocess
+import rasterio
 from shapely.validation import make_valid 
 from osgeo import gdal, osr, ogr
 gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2020\muenzenberg_sgb2\dop\testdaten\daten'
+path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2008\harz_np\dop\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'he_flugzeug_2020_muenzenberg_dop'
+tile_name = 'ni_flugzeug_2008_harz_np_dop'
 
 vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
 # if nodata-value is "nodata" use empty string ''
-nodata_value = '65535' 
-nodata_clip_option = 1 # if nodata_clip_option=1, nodata values will be clipped from the tiles
+nodata_value = '1' 
+nodata_clip_option = 1 # if nodata_clip_option = 1, nodata values will be clipped from the tiles
 
 
 in_srs_specified = 25832 #in some cases, the coordinate system does not apper GDAL-readable, in such cases, specify coordinate system 
@@ -123,15 +124,15 @@ if not in_srs in [str(out_srs)]:
         ogr2ogrString = 'ogr2ogr -f "GPKG" -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
         subprocess.run(ogr2ogrString)
         print("in_srs is NONE")
-    # if in_srs in ['4314', '9122']:
-    #     # direct projection from 4314, 9122 to 25832 is defective, therefore the projection 31476 is used as in_srs
-    #     in_srs = 31467
-    #     gdalwarpString = 'gdalwarp -of VRT -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + vrt_temp + ' ' + vrt_temp_proj
-    #     subprocess.run(gdalwarpString)
-    #     print('gdalwarpString: ' + gdalwarpString)
-    #     ogr2ogrString = 'ogr2ogr -f "GPKG" -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
-    #     subprocess.run(ogr2ogrString)
-    #     print("in_srs is 4314 or 9122")    
+    if in_srs in ['4314', '9122']:
+        # direct projection from 4314, 9122 to 25832 is defective, therefore the projection 31476 is used as in_srs
+        in_srs = 31467
+        gdalwarpString = 'gdalwarp -of VRT -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + vrt_temp + ' ' + vrt_temp_proj
+        subprocess.run(gdalwarpString)
+        print('gdalwarpString: ' + gdalwarpString)
+        ogr2ogrString = 'ogr2ogr -f "GPKG" -s_srs EPSG:' + str(in_srs) + ' -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
+        subprocess.run(ogr2ogrString)
+        print("in_srs is 4314 or 9122")    
     else:
         gdalwarpString = 'gdalwarp -of VRT -t_srs EPSG:' + str(out_srs) + ' ' + vrt_temp + ' ' + vrt_temp_proj
         subprocess.run(gdalwarpString)
@@ -353,10 +354,10 @@ def clip_nodata(input, nodata_value, cutline_dir = None):
     # Save the modified geodata frame back to the file
     gdf.to_file(cutline, layer='contour', driver="GPKG")
     
-    if nodata_value == 0:
+    if nodata_value == '0':
         src = rasterio.open(rename) 
         dtype = src.dtypes[0]
-        dst_nodata = np.iinfo(dtype).max
+        dst_nodata = numpy.iinfo(dtype).max
         print(f"Using nodata value: {dst_nodata} for dtype: {dtype}")
         src.close()
     else:
@@ -430,27 +431,28 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata
 
     df = geopandas.read_file(outline, layer='contour')
     # remove empty vector tiles, raster tiles
-    if df.empty:
-        os.remove(outline)
-        os.remove(output)
-    else:
-        if nodata_clip_option == 1:          
-                footprint = os.path.join(dir_footprint, f"{output_name}_footprint.gpkg")
-                gdalindex_string = 'gdaltindex -tileindex location -lyr_name footprint ' + footprint + ' ' + output
-                subprocess.run(gdalindex_string)
-                # clip nodata values from raster tiles
-                clip_nodata(output, nodata_value, cutline_dir=dir_footprint)
-                df = geopandas.read_file(outline, layer='contour')
-        if 'location' not in df.columns:
-            df.insert(1, 'location', output)
-            df.to_file(outline, layer='contour', driver='GPKG')  
+    
+    if nodata_clip_option == 1:
+        if df.empty:
+            os.remove(outline)
+            os.remove(output)
+        else:          
+            footprint = os.path.join(dir_footprint, f"{output_name}_footprint.gpkg")
+            gdalindex_string = 'gdaltindex -tileindex location -lyr_name footprint ' + footprint + ' ' + output
+            subprocess.run(gdalindex_string)
+            # clip nodata values from raster tiles
+            clip_nodata(output, nodata_value, cutline_dir=dir_footprint)
+            df = geopandas.read_file(outline, layer='contour')
+    if 'location' not in df.columns:
+        df.insert(1, 'location', output)
+        df.to_file(outline, layer='contour', driver='GPKG')  
 
 
 # ###############
 # create 2x2 km cog tiles from temporary vrt that was created from input data  
 if __name__ == '__main__':
     count = mp.cpu_count()
-    pool = mp.Pool(count-count+4)
+    pool = mp.Pool(count-count+10)
     args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres, nodata_clip_option, nodata_value) for x in tiles]
     pool.starmap(tiling, args)
     pool.close()
@@ -460,11 +462,20 @@ if __name__ == '__main__':
     #   outline of complete dataset
     #   outline of each tile
     #   all 2x2 km tiles which contain data 
-    footprint_outline = glob(os.path.join(dir_footprint, '*000.gpkg'))
+    vector_data = glob(os.path.join(dir_footprint, '*000.gpkg'))
     tiles_valid = []
-    for x in footprint_outline:
+    for x in vector_data:
         df = geopandas.read_file(x, layer='contour')
-        tiles_valid.append(df)
+        tif_path = os.path.join(dir_cog, os.path.basename(x)[:-5]+'.tif')
+        # remove empty vector tiles, raster tiles
+        if df.empty:
+            os.remove(x)
+            os.remove(tif_path)
+        else:
+            if 'location' not in df:
+                df.insert(1, 'location', tif_path)
+            tiles_valid.append(df)
+    
 
     extent = os.path.join(dir_footprint, tile_name+'_extent.gpkg')
 
@@ -540,11 +551,7 @@ if __name__ == '__main__':
     vrt = os.path.join(path_data, vrt_name + '.vrt')
     
     if nodata_clip_option == 1:
-        # if nodata value is defined it will be used as source nodata
-        if type(tif) == list:
-            dataset = gdal.Open(tif[0])
-        else:
-            dataset = gdal.Open(tif)
+        dataset = gdal.Open(tile_sample)
         nodata_value = dataset.GetRasterBand(1).GetNoDataValue()
         
         nodata_list = []

@@ -10,7 +10,7 @@ import multiprocessing as mp
 import rasterio
 
 # Parameters
-path_data = r"\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2008\harz_np_ecker\dop\testdaten\daten\kacheln"
+path_data = r"\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2008\harz_np\dop\daten\temp"
 nodata_value = 0
 folder_exception = []  # Set to None or '' to disable filtering
 formats = ['*.tif', '*.jpg', '*.png', '*.img', '*.ovr'] # Specify the formats to collect # If you want to collect all files, set it None

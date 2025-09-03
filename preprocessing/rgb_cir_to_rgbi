@@ -1,0 +1,65 @@
+import os
+import subprocess
+from multiprocessing import Pool, cpu_count
+from osgeo import gdal
+gdal.UseExceptions()
+
+
+
+def merge_rasters(rgb, cir, output_folder=None):
+
+    if output_folder is None:
+        output_folder = os.path.join(os.path.dirname(os.path.dirname(rgb)), "rgbi")
+    filename = os.path.basename(rgb.replace(rgb[-4:], '_rgbi.tif'))
+    output_path = os.path.join(output_folder, filename)
+    
+    # Optional: Sicherstellen, dass der Ordner existiert
+    os.makedirs(output_folder, exist_ok=True)
+    
+    try:
+        r1 = gdal.Open(rgb)
+        r2 = gdal.Open(cir)
+
+        if r1 is None or r2 is None:
+            raise RuntimeError(f"Fehler beim Laden: {rgb} oder {cir}")
+
+        # Lese Bänder
+        band1 = r1.GetRasterBand(1).ReadAsArray()
+        band2 = r1.GetRasterBand(2).ReadAsArray()
+        band3 = r1.GetRasterBand(3).ReadAsArray()
+        band4 = r2.GetRasterBand(1).ReadAsArray()
+
+        # Basis-Info
+        cols = r1.RasterXSize
+        rows = r1.RasterYSize
+        geotransform = r1.GetGeoTransform()
+        projection = r1.GetProjection()
+        dtype = r1.GetRasterBand(1).DataType
+
+        # Ausgabe-Raster erstellen
+        driver = gdal.GetDriverByName("GTiff")
+        out_ds = driver.Create(output_path, cols, rows, 4, dtype)
+
+        out_ds.SetGeoTransform(geotransform)
+        out_ds.SetProjection(projection)
+        out_ds.GetRasterBand(4).SetColorInterpretation(gdal.GCI_Undefined)
+
+        out_ds.GetRasterBand(1).WriteArray(band1)
+        out_ds.GetRasterBand(2).WriteArray(band2)
+        out_ds.GetRasterBand(3).WriteArray(band3)
+        out_ds.GetRasterBand(4).WriteArray(band4)
+
+        # Dateien schließen
+        r1 = None
+        r2 = None
+        out_ds = None
+
+        print(f"✅ Fertig: {output_path}")
+    except Exception as e:
+        print(f"❌ Fehler bei {output_path}: {e}")
+
+
+raster_rgb = r"\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2018\gruenenplan_nlf_fe\dop\daten\rohdaten\testdaten\rgb\ef_534_5770.tif"
+raster_cir = r"\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2018\gruenenplan_nlf_fe\dop\daten\rohdaten\testdaten\cir\cir_534_5770.tif"
+
+merge_rasters(raster_rgb, raster_cir)
