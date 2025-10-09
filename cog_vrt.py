@@ -139,7 +139,7 @@ if not in_srs in [str(out_srs)]:
         ogr2ogrString = 'ogr2ogr -f "GPKG" -t_srs EPSG:' + str(out_srs) + ' ' + inputdata_extent_proj + ' ' + inputdata_extent + ' inputdata_extent'
         subprocess.run(ogr2ogrString)
         print("in_srs is "+in_srs)    
-    warning =  '\n\n\n\n\n WARNHINWEIS! Ausgangsdaten haben kein Koordinatensystem zugewiesen, bitte nachprüfen, ob Daten vollständig und lagerichtig berechnet wurden! \n\n\n\n\n'
+    warning =  '\n\n\n\n\n WARNHINWEIS! Ausgangsdaten haben kein Koordinatensystem zugewiesen, bitte nachpruefen, ob Daten vollstaendig und lagerichtig berechnet wurden! \n\n\n\n\n'
     vrt_temp = vrt_temp_proj
     inputdata_extent = inputdata_extent_proj
 dataframe = geopandas.read_file(inputdata_extent, layer='inputdata_extent')
