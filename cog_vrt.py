@@ -17,12 +17,12 @@ gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\he\flugzeug\2015\diemelstadt_sgb3\dop\daten'
+path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2010\solling_nlf_fe\dop\daten\test\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'he_flugzeug_2015_diemelstadt_sgb3_dop'
+tile_name = 'ni_flugzeug_2010_solling_nlf_fe_dop'
 
 vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
@@ -434,10 +434,10 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata
     # remove empty vector tiles, raster tiles
     
     if nodata_clip_option == 1:
-        if df.empty:
-            os.remove(outline)
-            os.remove(output)
-        else:          
+        if not df.empty:
+        #     os.remove(outline)
+        #     # os.remove(output)
+        # else:          
             footprint = os.path.join(dir_footprint, f"{output_name}_footprint.gpkg")
             gdalindex_string = 'gdaltindex -tileindex location -lyr_name footprint ' + footprint + ' ' + output
             subprocess.run(gdalindex_string)
@@ -453,7 +453,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata
 # create 2x2 km cog tiles from temporary vrt that was created from input data  
 if __name__ == '__main__':
     count = mp.cpu_count()
-    pool = mp.Pool(count-count+10)
+    pool = mp.Pool(count-count+1)
     args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres, nodata_clip_option, nodata_value) for x in tiles]
     pool.starmap(tiling, args)
     pool.close()
