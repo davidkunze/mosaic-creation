@@ -28,7 +28,7 @@ vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
 # if nodata-value is "nodata" use empty string ''
 nodata_value = '0' 
-nodata_clip_option = 0 # if nodata_clip_option = 1, nodata values will be clipped from the tiles
+nodata_clip_option = 1 # if nodata_clip_option = 1, nodata values will be clipped from the tiles
 
 
 in_srs_specified = 25832 #in some cases, the coordinate system does not apper GDAL-readable, in such cases, specify coordinate system 
@@ -358,7 +358,8 @@ def clip_nodata(input, nodata_value, cutline_dir = None):
     if nodata_value == '0':
         src = rasterio.open(rename) 
         dtype = src.dtypes[0]
-        dst_nodata = numpy.iinfo(dtype).max
+        # dst_nodata = numpy.iinfo(dtype).max
+        dst_nodata = -9999
         print(f"Using nodata value: {dst_nodata} for dtype: {dtype}")
         src.close()
     else:
@@ -453,7 +454,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata
 # create 2x2 km cog tiles from temporary vrt that was created from input data  
 if __name__ == '__main__':
     count = mp.cpu_count()
-    pool = mp.Pool(count-count+1)
+    pool = mp.Pool(count-count+2)
     args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres, nodata_clip_option, nodata_value) for x in tiles]
     pool.starmap(tiling, args)
     pool.close()
