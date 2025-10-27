@@ -358,7 +358,8 @@ def clip_nodata(input, nodata_value, cutline_dir = None):
     if nodata_value == '0':
         src = rasterio.open(rename) 
         dtype = src.dtypes[0]
-        dst_nodata = numpy.iinfo(dtype).max
+        # dst_nodata = numpy.iinfo(dtype).max
+        dst_nodata = -9999
         print(f"Using nodata value: {dst_nodata} for dtype: {dtype}")
         src.close()
     else:
@@ -434,10 +435,10 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata
     # remove empty vector tiles, raster tiles
     
     if nodata_clip_option == 1:
-        if df.empty:
-            os.remove(outline)
-            os.remove(output)
-        else:          
+        if not df.empty:
+        #     os.remove(outline)
+        #     # os.remove(output)
+        # else:          
             footprint = os.path.join(dir_footprint, f"{output_name}_footprint.gpkg")
             gdalindex_string = 'gdaltindex -tileindex location -lyr_name footprint ' + footprint + ' ' + output
             subprocess.run(gdalindex_string)
@@ -453,7 +454,7 @@ def tiling(input, out_path, extent, count_bands, tile_size, x_res, y_res, nodata
 # create 2x2 km cog tiles from temporary vrt that was created from input data  
 if __name__ == '__main__':
     count = mp.cpu_count()
-    pool = mp.Pool(count-count+10)
+    pool = mp.Pool(count-count+2)
     args = [(vrt_temp, dir_cog, x, band_count, tilesize, xres, yres, nodata_clip_option, nodata_value) for x in tiles]
     pool.starmap(tiling, args)
     pool.close()
