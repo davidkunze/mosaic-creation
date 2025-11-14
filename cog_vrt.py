@@ -17,18 +17,18 @@ gdal.UseExceptions()
 
 start_time = time.time()
 #insert path as server path: e.g.: "\\lb-srv\Luftbilder\luft..." (do not use drive letter)
-path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2010\solling_nlf_fe\dop\daten\test\daten'
+path_data = r'\\lb-srv\LB-Projekte\fernerkundung\luftbild\ni\flugzeug\2011\harz_nlf_fe\dop\daten\test\daten'
 path_out = path_data
 # naming scheme for tiles: bundesland_tragersystem_jahr_gebiet_auftrageber_datentyp_x-wert_y-wert
     # For abbreviations open "\\lb-server\LB-Projekte\SGB4_InterneVerwaltung\EDV\KON-GEO\2024\vrt_benennung\vrt_benennung.txt"
     # x-wert und y-wert will be added later
-tile_name = 'ni_flugzeug_2010_solling_nlf_fe_dop'
+tile_name = 'ni_flugzeug_2010_harz_nlf_fe_dop'
 
 vrt_name = tile_name
 # fill string if special nodata-value such as "255" is used in data
 # if nodata-value is "nodata" use empty string ''
-nodata_value = '0' 
-nodata_clip_option = 1 # if nodata_clip_option = 1, nodata values will be clipped from the tiles
+nodata_value = '' 
+nodata_clip_option = 0 # if nodata_clip_option = 1, nodata values will be clipped from the tiles
 
 
 in_srs_specified = 25832 #in some cases, the coordinate system does not apper GDAL-readable, in such cases, specify coordinate system 
