@@ -58,7 +58,7 @@ with open(batch_file, "w", encoding="utf-8") as f:
         for layer in layers:
             cmd = (
                 f'ogr2ogr -f "PostgreSQL" {pg_conn} "{gpkg}" {layer} '
-                f'-nln tiles.{layer} -nlt PROMOTE_TO_MULTI\n'
+                f'-nln {layer} -nlt MULTIPOLYGON\n'
             )
             f.write(cmd)
         f.write("\n")
